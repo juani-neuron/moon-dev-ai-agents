@@ -49,7 +49,11 @@ from termcolor import colored, cprint
 from dotenv import load_dotenv
 import openai
 from src import config
-from src import nice_funcs as n
+try:
+    from src import nice_funcs as n
+except (ValueError, ImportError) as e:
+    print(f"⚠️ nice_funcs not available (likely missing BIRDEYE_API_KEY): {e}")
+    n = None
 from src.data.ohlcv_collector import collect_all_tokens
 from datetime import datetime, timedelta
 import time
@@ -88,7 +92,7 @@ class RiskAgent(BaseAgent):
         deepseek_key = os.getenv("DEEPSEEK_KEY")
         
         if not openai_key:
-            raise ValueError("🚨 OPENAI_KEY not found in environment variables!")
+            print("⚠️ OPENAI_KEY not found — OpenAI/DeepSeek override disabled (not required)")
         if not anthropic_key:
             raise ValueError("🚨 ANTHROPIC_KEY not found in environment variables!")
             

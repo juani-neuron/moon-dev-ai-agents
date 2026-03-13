@@ -1,0 +1,63 @@
+{
+  "strategy_name": "VolContractionMomentum",
+  "description": "This strategy identifies low volatility regimes using Bollinger Bandwidth. A long entry is triggered when bandwidth is in its lowest 20th percentile over a lookback period, signaling a contraction, and is confirmed by bullish momentum from the Stochastic RSI. The trade is exited when price touches the opposite Bollinger Band or a fixed 2:1 risk-reward target is hit, whichever comes first. The short logic is the mirror image.",
+  "indicators": [
+    {
+      "name": "bbands",
+      "library": "pandas_ta",
+      "params": {
+        "length": 20,
+        "std": 2
+      }
+    },
+    {
+      "name": "stochrsi",
+      "library": "pandas_ta",
+      "params": {
+        "length": 14,
+        "rsi_length": 14,
+        "k": 3,
+        "d": 3
+      }
+    }
+  ],
+  "entry_long": {
+    "conditions": [
+      "bbands_bandwidth_percentile(20, 100) < 20",
+      "stochrsi_k > stochrsi_d",
+      "stochrsi_k crosses above 20 from below"
+    ],
+    "logic": "ALL conditions must be true (AND)"
+  },
+  "entry_short": {
+    "conditions": [
+      "bbands_bandwidth_percentile(20, 100) < 20",
+      "stochrsi_k < stochrsi_d",
+      "stochrsi_k crosses below 80 from above"
+    ],
+    "logic": "ALL conditions must be true (AND)"
+  },
+  "exit_long": {
+    "conditions": [
+      "close >= bbands_upper"
+    ],
+    "stop_loss": "2% below entry price",
+    "take_profit": "4% above entry price (2:1 risk-reward)"
+  },
+  "exit_short": {
+    "conditions": [
+      "close <= bbands_lower"
+    ],
+    "stop_loss": "2% above entry price",
+    "take_profit": "4% below entry price (2:1 risk-reward)"
+  },
+  "position_sizing": "fixed 100% equity per trade (backtesting.py default)",
+  "parameters": {
+    "bandwidth_lookback": 100,
+    "bandwidth_percentile_threshold": 20,
+    "stop_loss_pct": 2,
+    "risk_reward_ratio": 2
+  },
+  "expected_trade_frequency": "15-30 trades per 1000 candles",
+  "notes": "The 'bbands_bandwidth_percentile' is not a standard indicator. It must be calculated: 1) Compute Bollinger Bandwidth = (Upper Band - Lower Band) / Middle Band. 2) Calculate the rolling percentile rank of the current bandwidth value over the last 100 candles. Ensure the crossing conditions for Stochastic RSI are checked on the current candle only."
+}

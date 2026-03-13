@@ -456,6 +456,11 @@ def run_backtest(symbol, start_date, end_date, resume=False):
     swarm = None
     if new_candles > 0:
         swarm = SwarmAgent()
+    # Clear live feed file for dashboard real-time display
+    live_feed_path = OUTPUT_DIR / "live_feed.jsonl"
+    if not resume:
+        live_feed_path.unlink(missing_ok=True)
+
     cprint(f"\nStarting backtest loop... ({new_candles} new + {skip_count} cached = {total_candles - start_offset} candles)\n", "cyan", attrs=["bold"])
 
     api_call_count = 0
@@ -523,16 +528,27 @@ def run_backtest(symbol, start_date, end_date, resume=False):
         cprint(line, color)
 
         # Log
-        candle_log.append({
+        log_entry = {
             "candle_num": i + 1,
             "timestamp": str(ts),
             "close": candle["close"],
+            "open": candle["open"],
+            "high": candle["high"],
+            "low": candle["low"],
+            "volume": candle["volume"],
             "action": action,
             "confidence": confidence,
             "votes": per_model,
             "event": event,
             "equity": round(sim.equity, 2),
-        })
+            "total_candles": total_candles,
+        }
+        candle_log.append(log_entry)
+
+        # Write live feed line (for dashboard real-time display)
+        live_feed_path = OUTPUT_DIR / "live_feed.jsonl"
+        with open(live_feed_path, "a") as lf:
+            lf.write(json.dumps(log_entry, default=str) + "\n")
 
         # Auto-checkpoint every 10 candles
         if (i + 1) % 10 == 0:

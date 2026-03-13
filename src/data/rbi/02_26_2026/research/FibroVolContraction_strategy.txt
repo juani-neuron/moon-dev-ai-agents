@@ -1,0 +1,38 @@
+STRATEGY_NAME: FibroVolContraction
+
+STRATEGY_DETAILS:
+
+**Core Concept:** This strategy identifies potential continuation points within a prevailing uptrend by combining Fibonacci retracement analysis with a specific volatility condition. It seeks entries where price pulls back to a key Fibonacci support level *while* the Average True Range (ATR) is contracting, signaling a coiling of volatility that often precedes the next directional move. Profits are taken on a breakout from this contraction phase.
+
+**Required Indicators & Setup:**
+1.  **Fibonacci Retracement Tool:** Drawn from a significant swing low to a significant swing high within the established uptrend.
+2.  **Average True Range (ATR):** A period of 14 is standard. Used to measure market volatility.
+3.  **Trend Confirmation:** A simple moving average (e.g., SMA 50 or 200) can be used to confirm the broader uptrend context. Price should be above this MA.
+
+**Key Strategy Components:**
+*   **Trend Context:** The strategy is only active in a confirmed **uptrend**. Look for a sequence of higher highs and higher lows.
+*   **Fibonacci Levels:** Primary levels of interest are the 38.2%, 50.0%, and 61.8% retracement levels. The 61.8% level is often considered the deepest "healthy" pullback in a strong trend.
+*   **Volatility Condition:** The ATR value must be in a state of **contraction**. This is visually identified by the ATR line declining from a recent peak, indicating decreasing daily trading ranges. The concept of "ATR bands" can be implemented by plotting a simple moving average of the ATR and observing price action within a narrowing range, or simply by monitoring the ATR indicator itself for a clear downtrend.
+
+**Entry Rules (LONG):**
+A valid long entry signal requires ALL of the following conditions:
+1.  **Trend:** The asset is in a sustained uptrend (price > key SMA, HH/HL structure).
+2.  **Pullback:** Price declines and touches or comes very near (within a few ticks) to a key Fibonacci retracement level (38.2%, 50%, or 61.8%).
+3.  **Volatility Contraction:** Concurrently, the ATR is visibly declining, showing lower highs on its own plot. The market is becoming less volatile at the support level.
+4.  **Entry Trigger:** Enter a **LONG** position on a bullish price reaction at the Fib level. This can be a:
+    *   Bullish engulfing candle.
+    *   A clear bounce off the level with a close above it.
+    *   (Optional but prudent) A confirmation candle closing above the high of the candle that touched the Fib level.
+
+**Exit & Risk Management Rules:**
+*   **Stop-Loss:** Place a stop-loss order **below** the Fibonacci level used for entry. For added safety, place it below the recent swing low that formed just before the bounce. The distance of this stop can be measured in ATR multiples (e.g., 1.5 x current ATR) to account for current volatility.
+*   **Profit Target / Exit:** The strategy closes on **breakouts**. Two primary methods:
+    1.  **Volatility Expansion Breakout:** Exit the position when the ATR begins to rise significantly again, indicating the coiled move has occurred and volatility is expanding, often near the end of a strong impulse wave.
+    2.  **Price Breakout to New Highs:** Exit when price breaks above the prior swing high (the peak from which the Fibonacci tool was drawn), confirming trend continuation. A portion of the position can be scaled out here.
+*   **Trailing Stop:** After a strong move, a trailing stop based on ATR (e.g., a multiple of ATR below the highest close) can be used to capture the majority of the trend.
+
+**Important Considerations:**
+*   This strategy is counter-trend at the entry point (buying a dip) but aligns with the major trend.
+*   The confluence of Fibonacci support *and* contracting volatility is the key filter that increases the probability of a successful bounce.
+*   It may produce fewer signals but aims for higher-quality setups with favorable risk/reward ratios.
+*   Always assess the overall market context. This strategy works best in trending markets and may fail in strong, volatile reversals or range-bound conditions without a clear trend.

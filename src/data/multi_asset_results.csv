@@ -1,0 +1,10 @@
+Asset,Strategy,Return [%],Sharpe,Max DD [%],Win Rate [%],Trades,Profit Factor
+BTC,VolumetricBollinger,103.3,0.86,-30.67,80.0,45,1.88
+BTC,VolSurgeReversion,-9.32,-0.35,-15.66,44.79,96,0.81
+BTC,RangeBoundPut,14.7,0.96,-5.11,82.86,35,2.27
+ETH,VolumetricBollinger,47.11,0.36,-39.29,73.24,71,1.29
+ETH,VolSurgeReversion,-13.09,-0.36,-24.8,47.24,163,0.96
+ETH,RangeBoundPut,3.21,0.17,-11.88,70.37,54,1.12
+SOL,VolumetricBollinger,135.34,0.52,-50.72,73.33,150,1.29
+SOL,VolSurgeReversion,-49.17,-1.39,-53.92,43.48,207,0.76
+SOL,RangeBoundPut,11.69,0.41,-16.64,71.55,116,1.18

@@ -78,6 +78,14 @@ We pivoted from backtesting (0/179 TA strategies profitable on 15m) to Moon Dev'
 - **Conclusion: Standard TA indicators on 15m crypto have no edge. Must pivot approach.**
 - Built `src/scripts/swarm_backtester.py` — replays historical candles through real AI swarm, simulates positions with SL/TP
 - **First swarm backtest (BTC 1H, Feb 24-26): +4.47% return, PF 2.69, max DD -2.18%, 7 trades**
+- Extended swarm backtest to 20 days (Feb 20 - Mar 11): +5.95% return, PF 1.28, max DD -4.92%, 41 trades
+- Built `src/scripts/swarm_dashboard.py` — real-time Dash + Plotly dashboard for swarm backtests
+  - Candlestick charts with trade markers, equity curve, AI vote bars
+  - Live terminal showing each agent's vote as candles are processed
+  - Can launch/stop backtests from UI, auto-refreshes every 3 seconds
+  - Run: `PYTHONPATH=. ./venv/bin/python3 src/scripts/swarm_dashboard.py` → http://localhost:8050
+- Modified swarm_backtester to write `live_feed.jsonl` (one line per candle) for real-time dashboard updates
+- Installed `streamlit`, `plotly`, `dash` packages
 
 ### Available Backtest Data
 | File | Pair | Candles | Date Range |
@@ -456,7 +464,18 @@ PACKAGE_CONFIG = {"type": "deepseek", "name": "deepseek-chat"}
 
 _Update this section as steps are completed — delete done items, add new ones._
 
-### Current: AI Swarm Trading on HyperLiquid
+### Current: Validate Swarm Edge & Prepare for Live
+
+**Status:** 20-day backtest complete (Feb 20 - Mar 11). Edge is real but thin (PF 1.28). Need more validation before going live.
+
+**Next steps:**
+1. **Extend backtest further** — run more weeks/months to confirm PF stays above 1.0
+2. **Test on ETH/SOL** — currently BTC only, need multi-asset validation
+3. **Analyze losing streaks** — 7 consecutive losses Feb 20-23, understand max streak risk
+4. **Consider parameter tweaks** — SL/TP levels, position sizing, short signals
+5. **If edge holds over 30+ days and multiple assets** → fund wallet and go live
+
+### Live Trading Setup (ready but not started)
 
 **How to run (observation mode — no real trades):**
 ```bash
@@ -494,23 +513,44 @@ PYTHONPATH=. ./venv/bin/python3 src/agents/trading_agent.py
 
 ### Swarm Backtester Results
 
-**First run: BTC 1H, Feb 24-26 2026 (72 candles, $2.16 API cost, 30 min runtime)**
+**Extended run: BTC 1H, Feb 20 - Mar 11, 2026 (480 candles, 41 trades)**
 
 | Metric | Value |
 |---|---|
-| Return | +4.47% |
-| Max Drawdown | -2.18% |
-| Trades | 7 (3W / 4L) |
-| Win Rate | 42.9% |
-| Profit Factor | 2.69 |
-| Gross Profit | $710.47 |
-| Gross Loss | $263.64 |
+| Return | **+5.95%** |
+| Final Equity | $10,594.80 |
+| Profit Factor | **1.28** |
+| Max Drawdown | -4.92% |
+| Trades | 41 (14W / 27L) |
+| Win Rate | 34.1% |
+| Gross Profit | $2,728.07 |
+| Gross Loss | $2,133.27 |
 
 Key observations:
-- Swarm correctly stayed flat during Feb 24 selloff (15 hours of SELL votes while no position)
-- Two TP hits at +8% drove most profit ($320 + $323)
-- Four losses were small signal-based exits (avg -$66) — cuts losses fast
-- Need more data points (weeks/months) to determine if edge is real or lucky window
+- **9 TP hits at +8%** drove all profit (~$2,893 total), only **1 SL hit** in 41 trades
+- Avg win: +$195, avg loss: -$79 → **2.5:1 win:loss ratio** compensates for 34% win rate
+- Swarm correctly stayed flat during Feb 22-24 selloff ($68k→$63k) and Mar 5-8 crash ($73k→$67k)
+- Back-to-back TP hits on Mar 4 during BTC rally ($68k→$73k)
+- PF dropped from 2.16 (4-day sample) to 1.28 (20-day) — edge is real but thin
+- Pattern: catch rallies with TP, cut losers fast via signal reversal before SL
+
+**Earlier run: BTC 1H, Feb 24-26 (72 candles):** +4.47%, PF 2.69, DD -2.18%, 7 trades
+
+### Swarm Dashboard
+
+Real-time Dash + Plotly dashboard for monitoring backtests:
+```bash
+PYTHONPATH=. ./venv/bin/python3 src/scripts/swarm_dashboard.py
+# Open http://localhost:8050
+```
+
+Features:
+- Launch/stop backtests from UI (sidebar controls)
+- Auto-refreshes every 3 seconds (reads `live_feed.jsonl`)
+- Candlestick chart with trade entry/exit markers
+- Equity curve, AI vote bars (color-coded per model)
+- Live agent terminal showing votes as they arrive
+- Load and compare completed runs from dropdown
 
 ## Project Philosophy
 

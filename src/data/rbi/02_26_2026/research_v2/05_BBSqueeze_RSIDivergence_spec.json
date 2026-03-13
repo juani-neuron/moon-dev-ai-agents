@@ -1,0 +1,71 @@
+{
+  "strategy_name": "VolSqueezeDivergence",
+  "description": "Identifies volatility compression using Bollinger Band width reaching its 30-day minimum, then enters when price breaks out with a 2x ATR move from the squeeze zone, confirmed by RSI divergence. Long entries occur on bullish breakouts with bullish RSI divergence; short entries on bearish breakouts with bearish RSI divergence.",
+  "indicators": [
+    {
+      "name": "bbands",
+      "library": "talib",
+      "params": {
+        "timeperiod": 20,
+        "nbdevup": 2,
+        "nbdevdn": 2
+      }
+    },
+    {
+      "name": "atr",
+      "library": "talib",
+      "params": {
+        "timeperiod": 14
+      }
+    },
+    {
+      "name": "rsi",
+      "library": "talib",
+      "params": {
+        "timeperiod": 14
+      }
+    }
+  ],
+  "entry_long": {
+    "conditions": [
+      "Bollinger Band width (upper - lower) is at 30-day minimum (lowest value in last 1440 bars)",
+      "Close > upper Bollinger Band (20,2)",
+      "ATR(14) * 2 <= (Close - upper Bollinger Band)",
+      "Bullish RSI divergence: price made lower low over last 14 bars while RSI(14) made higher low over same period"
+    ],
+    "logic": "ALL conditions must be true (AND)"
+  },
+  "entry_short": {
+    "conditions": [
+      "Bollinger Band width (upper - lower) is at 30-day minimum (lowest value in last 1440 bars)",
+      "Close < lower Bollinger Band (20,2)",
+      "ATR(14) * 2 <= (lower Bollinger Band - Close)",
+      "Bearish RSI divergence: price made higher high over last 14 bars while RSI(14) made lower high over same period"
+    ],
+    "logic": "ALL conditions must be true (AND)"
+  },
+  "exit_long": {
+    "conditions": [
+      "Close crosses below entry price - (ATR(14) * 2)"
+    ],
+    "stop_loss": "Entry price - (ATR(14) * 2)",
+    "take_profit": "Entry price + (ATR(14) * 4)"
+  },
+  "exit_short": {
+    "conditions": [
+      "Close crosses above entry price + (ATR(14) * 2)"
+    ],
+    "stop_loss": "Entry price + (ATR(14) * 2)",
+    "take_profit": "Entry price - (ATR(14) * 4)"
+  },
+  "position_sizing": "fixed 100% equity per trade (backtesting.py default)",
+  "parameters": {
+    "squeeze_lookback": 1440,
+    "atr_multiplier_entry": 2,
+    "atr_multiplier_sl": 2,
+    "atr_multiplier_tp": 4,
+    "divergence_lookback": 14
+  },
+  "expected_trade_frequency": "8-15 trades per 1000 candles",
+  "notes": "Bollinger Band width calculation: upper_band - lower_band. 30-day minimum = 1440 bars on 15-minute timeframe. RSI divergence detection requires comparing current RSI value with RSI 14 bars ago and corresponding price levels. Ensure no future bias when identifying 'lowest width in 30 days' - use rolling minimum up to current bar only."
+}

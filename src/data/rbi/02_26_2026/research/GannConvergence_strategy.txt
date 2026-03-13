@@ -1,0 +1,44 @@
+STRATEGY_NAME: GannConvergence
+
+STRATEGY_DETAILS:
+
+**1. Core Concept & Key Components**
+This is an intraday trading strategy that combines geometric market analysis (Gann Angles) with a simple moving average (SMA) for trend confirmation. The primary mechanism is the identification of price levels where the dynamic Gann Angle intersects with the 5-period SMA. These intersections are treated as significant zones for both potential trend continuation and profit-taking.
+
+*   **Primary Indicator: Gann Angles.** These are diagonal lines drawn from significant price pivots (highs or lows) at specific angles (e.g., 1x1, 1x2, 2x1). The 1x1 angle (45 degrees) is often considered the most significant, representing a perfect balance between price and time. The angle acts as dynamic support in an uptrend and dynamic resistance in a downtrend.
+*   **Confirmation Filter: 5-Period Simple Moving Average (SMA).** This fast-moving average provides a short-term trend filter. Its primary role is to confirm the direction suggested by the price's position relative to the Gann Angle and to generate the specific profit target levels via intersection.
+
+**2. Entry Rules**
+Entries are triggered by price action in relation to the Gann Angle, confirmed by the SMA's position.
+*   **Long Entry:** Initiate a long position when:
+    1.  Price is in an established uptrend (making higher highs and higher lows).
+    2.  Price pulls back and finds support *on or near* a rising Gann Angle (e.g., the 1x1 angle drawn from a recent significant low).
+    3.  The 5-period SMA is *below* the current price but is also rising, confirming the short-term bullish momentum.
+    4.  A bullish reversal candlestick pattern (e.g., hammer, bullish engulfing) forms at the Gann Angle support, providing the entry signal.
+*   **Short Entry:** Initiate a short position when:
+    1.  Price is in an established downtrend (making lower highs and lower lows).
+    2.  Price rallies and finds resistance *on or near* a descending Gann Angle (e.g., the 1x1 angle drawn from a recent significant high).
+    3.  The 5-period SMA is *above* the current price but is also falling, confirming the short-term bearish momentum.
+    4.  A bearish reversal candlestick pattern (e.g., shooting star, bearish engulfing) forms at the Gann Angle resistance, providing the entry signal.
+
+**3. Exit & Profit Target Rules**
+This strategy's defining feature is its profit target methodology.
+*   **Primary Profit Target:** The trade's profit target is not a fixed pip/point amount, but a dynamic price level. It is set at the **future projected intersection point** between the 5-period SMA and the relevant Gann Angle. The trader must calculate or visually estimate where these two lines will cross based on their current trajectories.
+*   **Stop-Loss Placement:**
+    *   For a **Long** trade, place the stop-loss just below the Gann Angle that provided support and below the most recent minor swing low.
+    *   For a **Short** trade, place the stop-loss just above the Gann Angle that provided resistance and above the most recent minor swing high.
+*   **Trailing Stop (Alternative Exit):** Once price moves favorably and the SMA begins to accelerate away from the Gann Angle, a trailing stop can be employed. A common method is to trail the stop using the 5-period SMA itself or a recent swing low/high.
+
+**4. Risk Management**
+*   **Position Sizing:** Risk per trade should be a fixed percentage of the trading capital (e.g., 1-2%). The position size is calculated as: (Account Risk %) / ((Entry Price - Stop-Loss Price) / Entry Price).
+*   **Trade Frequency:** As an intraday strategy focusing on key Gann Angle interactions, signals may be limited to 1-3 high-quality setups per trading session per instrument.
+*   **Maximum Daily Loss:** Implement a daily loss limit (e.g., 3-5% of capital) to prevent drawdowns from compounding during unfavorable market conditions.
+
+**5. Required Indicators & Setup**
+*   **Chart:** Any intraday timeframe (e.g., 5-minute, 15-minute, 1-hour). Consistency is key.
+*   **Indicators:**
+    1.  **Gann Fan / Gann Angle Tool:** Available on most trading platforms (MT4/MT5, TradingView). It must be manually drawn from a clear, significant pivot point.
+    2.  **Simple Moving Average (SMA):** Period set to 5. Applied to the close.
+*   **Market Conditions:** Works best in markets with clear, trending behavior. It may generate false signals or whipsaws in ranging or choppy markets. The 5-period SMA will be highly sensitive in such environments, causing premature or erratic intersection targets.
+
+**Summary:** The GannConvergence strategy is a structured, geometrically-based intraday approach. It uses the confluence of a dynamic support/resistance line (Gann Angle) and a short-term trend filter (5 SMA) to define both entry points and dynamic profit targets. Success depends heavily on the correct identification of significant pivots for drawing the Gann Angles and disciplined execution when price converges with these geometric levels.

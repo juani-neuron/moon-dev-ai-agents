@@ -1,0 +1,32 @@
+STRATEGY_NAME: VolumetricBreakout
+
+STRATEGY_DETAILS:
+
+**1. Key Strategy Components**
+This is a momentum-based strategy that identifies potential price breakouts by analyzing the relationship between price action and trading volume. The core premise is that a significant price move accompanied by unusually high volume (a "volume spike") is more likely to sustain a genuine trend, whereas a breakout on low volume is suspect and prone to failure. The strategy uses a combination of price levels (support/resistance, recent highs/lows) and volume analysis to filter for high-probability trade setups.
+
+**2. Entry Rules (Long & Short)**
+*   **Primary Long Entry:** The price must close ABOVE a defined resistance level (e.g., the high of the last 20-50 bars). Concurrently, the current bar's volume must be SIGNIFICANTLY higher than the average volume over a recent period (e.g., 150-200% of the 20-period Simple Moving Average of volume). Enter on the next bar's open.
+*   **Primary Short Entry:** The price must close BELOW a defined support level (e.g., the low of the last 20-50 bars). Concurrently, the current bar's volume must be SIGNIFICANTLY higher than the average volume. Enter on the next bar's open.
+*   **Confirmation Filter (Optional but Recommended):** To avoid false breakouts in choppy markets, add a trend filter. For a long entry, a medium-term moving average (e.g., 50-period EMA) should be sloping upwards and price should be above it. For a short entry, the MA should be sloping down and price below it.
+
+**3. Exit Rules**
+*   **Profit Target (Take Profit):** Use a risk-reward ratio. A common approach is to set a target at 1.5x to 3x the initial risk (distance from entry to stop-loss). Alternatively, use a trailing stop or exit when volume on subsequent bars diminishes significantly, suggesting momentum is waning.
+*   **Stop-Loss:** Place a stop-loss order just below the breached resistance level for long trades, or just above the breached support level for short trades. This level now becomes the new support/resistance. If the price re-enters this zone, the breakout is considered invalid.
+
+**4. Risk Management**
+*   **Position Sizing:** Risk a fixed percentage of your trading capital per trade (e.g., 1-2%). Calculate position size as: (Account Risk) / (Entry Price - Stop-Loss Price).
+*   **Maximum Daily/Weekly Risk:** Define a maximum loss limit for a given period to prevent drawdowns from compounding.
+*   **Correlation:** Avoid taking multiple breakout trades in highly correlated assets simultaneously.
+
+**5. Required Indicators & Settings**
+*   **Volume Indicator:** Standard Volume bars (preferably with color coding: green for up bars, red for down bars).
+*   **Volume Moving Average:** A Simple Moving Average (SMA) applied to volume (period 20 is standard). This creates the benchmark for identifying a "volume spike."
+*   **Price Channel/Donchian Channel:** To dynamically identify recent highs and lows for breakout levels. Set to a period of 20-50.
+*   **Trend Filter (Optional):** A 50-period Exponential Moving Average (EMA) for price.
+
+**6. Additional Notes & Psychology**
+*   **Patience is Critical:** Wait for the close of the bar to confirm the breakout level has been breached. Do not enter on intra-bar spikes.
+*   **Volume is the Key:** A high-volume breakout is the signal. A low-volume breakout is noise and should be ignored.
+*   **Market Context:** This strategy tends to work best in trending or transitioning markets. It may generate whipsaws (false signals) in ranging, low-volatility markets.
+*   **Backtesting:** Always test the specific volume multiplier (e.g., 1.5x, 2.0x average) and breakout period length on historical data for your chosen asset to optimize parameters.

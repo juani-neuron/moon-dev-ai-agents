@@ -81,13 +81,16 @@ Built with love by Moon Dev 🚀
 # ============================================================================
 
 # 🏦 EXCHANGE SELECTION
-EXCHANGE = "ASTER"  # Options: "ASTER", "HYPERLIQUID", "SOLANA"
-                     # - "ASTER" = Aster DEX futures (supports long/short)
-                     # - "HYPERLIQUID" = HyperLiquid perpetuals (supports long/short)
-                     # - "SOLANA" = Solana on-chain DEX (long only)
+EXCHANGE = "HYPERLIQUID"  # Options: "ASTER", "HYPERLIQUID", "SOLANA"
+                           # - "ASTER" = Aster DEX futures (supports long/short)
+                           # - "HYPERLIQUID" = HyperLiquid perpetuals (supports long/short)
+                           # - "SOLANA" = Solana on-chain DEX (long only)
+
+# 👁️ OBSERVATION MODE — logs decisions without placing actual trades
+OBSERVATION_MODE = True   # True = dry-run (no orders placed), False = live trading
 
 # 🌊 AI MODE SELECTION
-USE_SWARM_MODE = True  # True = 6-model swarm consensus (~45-60s per token)
+USE_SWARM_MODE = True  # True = multi-model swarm consensus
                         # False = Single model fast execution (~10s per token)
 
 # 📈 TRADING MODE SETTINGS
@@ -107,7 +110,7 @@ LONG_ONLY = True  # True = Long positions only (works on all exchanges)
                   # Note: Solana is always LONG_ONLY (exchange limitation)
 
 # 🤖 SINGLE MODEL SETTINGS (only used when USE_SWARM_MODE = False)
-AI_MODEL_TYPE = 'xai'  # Options: 'groq', 'openai', 'claude', 'deepseek', 'xai', 'ollama'
+AI_MODEL_TYPE = 'claude'  # Options: 'groq', 'openai', 'claude', 'deepseek', 'xai', 'ollama'
 AI_MODEL_NAME = None   # None = use default, or specify: 'grok-4-fast-reasoning', 'claude-3-5-sonnet-latest', etc.
 AI_TEMPERATURE = 0.7   # Creativity vs precision (0-1)
 AI_MAX_TOKENS = 1024   # Max tokens for AI response
@@ -116,7 +119,7 @@ AI_MAX_TOKENS = 1024   # Max tokens for AI response
 USE_PORTFOLIO_ALLOCATION = False # True = Use AI for portfolio allocation across multiple tokens
                                  # False = Simple mode - trade single token at MAX_POSITION_PERCENTAGE
 
-MAX_POSITION_PERCENTAGE = 90     # % of account balance to use as MARGIN per position (0-100)
+MAX_POSITION_PERCENTAGE = 40     # % of account balance to use as MARGIN per position (0-100)
                                  # How it works per exchange:
                                  # - ASTER/HYPERLIQUID: % of balance used as MARGIN (then multiplied by leverage)
                                  #   Example: $100 balance, 90% = $90 margin
@@ -124,7 +127,7 @@ MAX_POSITION_PERCENTAGE = 90     # % of account balance to use as MARGIN per pos
                                  # - SOLANA: Uses % of USDC balance directly (no leverage)
                                  #   Example: 100 USDC, 90% = 90 USDC position
 
-LEVERAGE = 9                    # Leverage multiplier (1-125x on Aster/HyperLiquid)
+LEVERAGE = 3                    # Leverage multiplier (1-125x on Aster/HyperLiquid)
                                  # Higher leverage = bigger position with same margin, higher liquidation risk
                                  # Examples with $100 margin:
                                  #           5x = $100 margin → $500 notional position
@@ -134,7 +137,7 @@ LEVERAGE = 9                    # Leverage multiplier (1-125x on Aster/HyperLiqu
 
 # Stop Loss & Take Profit
 STOP_LOSS_PERCENTAGE = 5.0       # % loss to trigger stop loss exit (e.g., 5.0 = -5%)
-TAKE_PROFIT_PERCENTAGE = 5.0     # % gain to trigger take profit exit (e.g., 5.0 = +5%)
+TAKE_PROFIT_PERCENTAGE = 8.0     # % gain to trigger take profit exit (e.g., 8.0 = +8%)
 PNL_CHECK_INTERVAL = 5           # Seconds between P&L checks when position is open
 
 # Legacy settings (kept for compatibility, not used in new logic)
@@ -142,15 +145,15 @@ usd_size = 25                    # [DEPRECATED] Use MAX_POSITION_PERCENTAGE inst
 max_usd_order_size = 3           # Maximum order chunk size in USD (for Solana chunking)
 
 # 📊 MARKET DATA COLLECTION
-DAYSBACK_4_DATA = 3              # Days of historical data to fetch
+DAYSBACK_4_DATA = 5              # Days of historical data to fetch
 DATA_TIMEFRAME = '1H'            # Bar timeframe: 1m, 3m, 5m, 15m, 30m, 1H, 2H, 4H, 6H, 8H, 12H, 1D, 3D, 1W, 1M
-                                 # Current: 3 days @ 1H = ~72 bars
+                                 # Current: 5 days @ 1H = ~120 bars
                                  # For 15-min: '15m' = ~288 bars
 SAVE_OHLCV_DATA = False          # True = save data permanently, False = temp data only
 
 # ⚡ TRADING EXECUTION SETTINGS
 slippage = 199                   # Slippage tolerance (199 = ~2%)
-SLEEP_BETWEEN_RUNS_MINUTES = 15  # Minutes between trading cycles
+SLEEP_BETWEEN_RUNS_MINUTES = 60  # Minutes between trading cycles
 
 # 🎯 TOKEN CONFIGURATION
 
@@ -300,6 +303,50 @@ from src.agents.swarm_agent import SwarmAgent
 # Load environment variables
 load_dotenv()
 
+# Cache HL account object (avoids repeated env lookups)
+_hl_account = None
+_hl_account_failed = False
+def _get_hl_account():
+    """Get cached HyperLiquid account object. Returns None if no key configured."""
+    global _hl_account, _hl_account_failed
+    if _hl_account is None and not _hl_account_failed and EXCHANGE == "HYPERLIQUID":
+        try:
+            _hl_account = n._get_account_from_env()
+        except ValueError:
+            _hl_account_failed = True
+            if OBSERVATION_MODE:
+                cprint("⚠️ No HYPER_LIQUID_ETH_PRIVATE_KEY — position checks skipped in observation mode", "yellow")
+            else:
+                raise
+    return _hl_account
+
+def _hl_get_position(token):
+    """Wrapper: get_position for HL returns tuple, convert to dict for trading_agent compatibility.
+    HL returns: (positions, im_in_pos, pos_size, pos_sym, entry_px, pnl_perc, is_long)
+    """
+    account = _get_hl_account()
+    if account is None:
+        # No wallet key — return empty position (safe for observation mode)
+        return {"position_amount": 0, "mark_price": 0, "pnl_percentage": 0, "pnl": 0}
+    positions, im_in_pos, pos_size, pos_sym, entry_px, pnl_perc, is_long = n.get_position(token, account)
+    if not im_in_pos:
+        return {"position_amount": 0, "mark_price": 0, "pnl_percentage": 0, "pnl": 0}
+    # Estimate mark price from entry + pnl
+    mark_price = entry_px * (1 + pnl_perc / 100) if is_long else entry_px * (1 - pnl_perc / 100)
+    pos_amount = float(pos_size)
+    pnl_usd = abs(pos_amount) * (mark_price - entry_px) if is_long else abs(pos_amount) * (entry_px - mark_price)
+    return {
+        "position_amount": pos_amount,
+        "mark_price": mark_price,
+        "entry_price": entry_px,
+        "pnl_percentage": pnl_perc,
+        "pnl": pnl_usd,
+        "is_long": is_long,
+    }
+
+if OBSERVATION_MODE:
+    cprint("👁️  OBSERVATION MODE — no real trades will be placed", "yellow", attrs=['bold'])
+
 # ============================================================================
 # HELPER FUNCTIONS
 # ============================================================================
@@ -320,7 +367,9 @@ def monitor_position_pnl(token, check_interval=PNL_CHECK_INTERVAL):
 
         while True:
             # Get current position
-            if EXCHANGE in ["ASTER", "HYPERLIQUID"]:
+            if EXCHANGE == "HYPERLIQUID":
+                position = _hl_get_position(token)
+            elif EXCHANGE == "ASTER":
                 position = n.get_position(token)
             else:
                 position_usd = n.get_token_balance_usd(token)
@@ -344,31 +393,27 @@ def monitor_position_pnl(token, check_interval=PNL_CHECK_INTERVAL):
                 # Check stop loss
                 if pnl_pct <= -STOP_LOSS_PERCENTAGE:
                     cprint(f"🛑 STOP LOSS HIT! P&L: {pnl_pct:.2f}% (target: -{STOP_LOSS_PERCENTAGE}%)", "red", attrs=['bold'])
-                    cprint(f"🔄 Closing position with limit orders...", "yellow")
-
-                    # Close position using limit sell (for longs) or limit buy (for shorts)
-                    if position['position_amount'] > 0:
-                        # Long position - use limit_sell
-                        n.limit_sell(token, position_size, slippage=0, leverage=LEVERAGE)
+                    if OBSERVATION_MODE:
+                        cprint(f"[OBSERVATION] Would close position via kill_switch({token})", "yellow")
                     else:
-                        # Short position - use limit_buy
-                        n.limit_buy(token, position_size, slippage=0, leverage=LEVERAGE)
-
+                        cprint(f"🔄 Closing position via kill_switch...", "yellow")
+                        if EXCHANGE == "HYPERLIQUID":
+                            n.kill_switch(token, _get_hl_account())
+                        else:
+                            n.kill_switch(token)
                     return True
 
                 # Check take profit
                 if pnl_pct >= TAKE_PROFIT_PERCENTAGE:
                     cprint(f"🎯 TAKE PROFIT HIT! P&L: {pnl_pct:.2f}% (target: +{TAKE_PROFIT_PERCENTAGE}%)", "green", attrs=['bold'])
-                    cprint(f"🔄 Closing position with limit orders...", "yellow")
-
-                    # Close position using limit sell (for longs) or limit buy (for shorts)
-                    if position['position_amount'] > 0:
-                        # Long position - use limit_sell
-                        n.limit_sell(token, position_size, slippage=0, leverage=LEVERAGE)
+                    if OBSERVATION_MODE:
+                        cprint(f"[OBSERVATION] Would close position via kill_switch({token})", "yellow")
                     else:
-                        # Short position - use limit_buy
-                        n.limit_buy(token, position_size, slippage=0, leverage=LEVERAGE)
-
+                        cprint(f"🔄 Closing position via kill_switch...", "yellow")
+                        if EXCHANGE == "HYPERLIQUID":
+                            n.kill_switch(token, _get_hl_account())
+                        else:
+                            n.kill_switch(token)
                     return True
 
             # Sleep before next check
@@ -838,13 +883,16 @@ Example format:
                     print(f"📊 Current position: ${current_position:.2f} USD")
                     
                     if current_position < target_allocation:
-                        print(f"✨ Executing entry for {token}")
-                        # Pass leverage for Aster/HyperLiquid, skip for Solana
-                        if EXCHANGE in ["ASTER", "HYPERLIQUID"]:
-                            n.ai_entry(token, amount, leverage=LEVERAGE)
+                        if OBSERVATION_MODE:
+                            print(f"[OBSERVATION] Would execute ai_entry({token}, ${amount:.2f})")
                         else:
-                            n.ai_entry(token, amount)
-                        print(f"✅ Entry complete for {token}")
+                            print(f"✨ Executing entry for {token}")
+                            # Pass leverage for Aster/HyperLiquid, skip for Solana
+                            if EXCHANGE in ["ASTER", "HYPERLIQUID"]:
+                                n.ai_entry(token, amount, leverage=LEVERAGE)
+                            else:
+                                n.ai_entry(token, amount)
+                            print(f"✅ Entry complete for {token}")
                     else:
                         print(f"⏸️ Position already at target size for {token}")
                     
@@ -872,7 +920,14 @@ Example format:
             action = row['action']
 
             # Check if we have a position
-            current_position = n.get_token_balance_usd(token)
+            if EXCHANGE == "HYPERLIQUID":
+                pos_dict = _hl_get_position(token)
+                current_position = abs(pos_dict.get('position_amount', 0)) * pos_dict.get('mark_price', 0)
+            elif EXCHANGE == "ASTER":
+                pos_dict = n.get_position(token)
+                current_position = abs(pos_dict.get('position_amount', 0)) * pos_dict.get('mark_price', 0) if pos_dict else 0
+            else:
+                current_position = n.get_token_balance_usd(token)
 
             cprint(f"\n{'='*60}", "cyan")
             cprint(f"🎯 Token: {token_short}", "cyan", attrs=['bold'])
@@ -884,12 +939,22 @@ Example format:
                 # We have a position - take action based on signal
                 if action == "SELL":
                     cprint(f"🚨 SELL signal with position - CLOSING POSITION", "white", "on_red")
-                    try:
-                        cprint(f"📉 Executing chunk_kill (${max_usd_order_size} chunks)...", "yellow")
-                        n.chunk_kill(token, max_usd_order_size, slippage)
-                        cprint(f"✅ Position closed successfully!", "white", "on_green")
-                    except Exception as e:
-                        cprint(f"❌ Error closing position: {str(e)}", "white", "on_red")
+                    if OBSERVATION_MODE:
+                        cprint(f"[OBSERVATION] Would close ${current_position:.2f} position for {token}", "yellow")
+                    else:
+                        try:
+                            if EXCHANGE == "HYPERLIQUID":
+                                cprint(f"📉 Executing kill_switch({token})...", "yellow")
+                                n.kill_switch(token, _get_hl_account())
+                            elif EXCHANGE == "ASTER":
+                                cprint(f"📉 Executing kill_switch({token})...", "yellow")
+                                n.kill_switch(token)
+                            else:
+                                cprint(f"📉 Executing chunk_kill (${max_usd_order_size} chunks)...", "yellow")
+                                n.chunk_kill(token, max_usd_order_size, slippage)
+                            cprint(f"✅ Position closed successfully!", "white", "on_green")
+                        except Exception as e:
+                            cprint(f"❌ Error closing position: {str(e)}", "white", "on_red")
                 elif action == "NOTHING":
                     cprint(f"⏸️  DO NOTHING signal - HOLDING POSITION", "white", "on_blue")
                     cprint(f"💎 Maintaining ${current_position:.2f} position", "cyan")
@@ -904,24 +969,24 @@ Example format:
                         cprint(f"📊 LONG ONLY mode: Can't open short, doing nothing", "cyan")
                     else:
                         # SHORT MODE ENABLED - Open short position
-                        # Get account balance and calculate position size
                         account_balance = get_account_balance()
                         position_size = calculate_position_size(account_balance)
 
                         cprint(f"📉 SELL signal with no position - OPENING SHORT", "white", "on_red")
                         cprint(f"⚡ {EXCHANGE} mode: Opening ${position_size:,.2f} short position", "yellow")
-                        try:
-                            # Check if we have the open_short function (Aster/HyperLiquid)
-                            if hasattr(n, 'open_short'):
-                                cprint(f"📉 Executing open_short (${position_size:,.2f})...", "yellow")
-                                n.open_short(token, position_size, slippage, leverage=LEVERAGE)
-                            else:
-                                # Fallback to market_sell which should open short on futures exchanges
-                                cprint(f"📉 Executing market_sell to open short (${position_size:,.2f})...", "yellow")
-                                n.market_sell(token, position_size, slippage, leverage=LEVERAGE)
-                            cprint(f"✅ Short position opened successfully!", "white", "on_green")
-                        except Exception as e:
-                            cprint(f"❌ Error opening short position: {str(e)}", "white", "on_red")
+                        if OBSERVATION_MODE:
+                            cprint(f"[OBSERVATION] Would open_short({token}, ${position_size:,.2f})", "yellow")
+                        else:
+                            try:
+                                if hasattr(n, 'open_short'):
+                                    cprint(f"📉 Executing open_short (${position_size:,.2f})...", "yellow")
+                                    n.open_short(token, position_size, slippage, leverage=LEVERAGE)
+                                else:
+                                    cprint(f"📉 Executing market_sell to open short (${position_size:,.2f})...", "yellow")
+                                    n.market_sell(token, position_size, slippage, leverage=LEVERAGE)
+                                cprint(f"✅ Short position opened successfully!", "white", "on_green")
+                            except Exception as e:
+                                cprint(f"❌ Error opening short position: {str(e)}", "white", "on_red")
                 elif action == "NOTHING":
                     cprint(f"⏸️  DO NOTHING signal with no position", "white", "on_blue")
                     cprint(f"⏭️  Staying out of market", "cyan")
@@ -936,35 +1001,44 @@ Example format:
                         position_size = calculate_position_size(account_balance)
 
                         cprint(f"💰 Opening position at MAX_POSITION_PERCENTAGE", "white", "on_green")
-                        try:
-                            if EXCHANGE in ["ASTER", "HYPERLIQUID"]:
-                                success = n.ai_entry(token, position_size, leverage=LEVERAGE)
-                            else:
-                                success = n.ai_entry(token, position_size)
-
-                            if success:
-                                cprint(f"✅ Position opened successfully!", "white", "on_green")
-
-                                # Verify position was actually opened
-                                time.sleep(2)  # Brief delay for order to settle
+                        if OBSERVATION_MODE:
+                            cprint(f"[OBSERVATION] Would open long: ai_entry({token}, ${position_size:,.2f}, leverage={LEVERAGE})", "yellow")
+                        else:
+                            try:
                                 if EXCHANGE in ["ASTER", "HYPERLIQUID"]:
-                                    position = n.get_position(token)
-                                    if position and position.get('position_amount', 0) != 0:
-                                        pnl_pct = position.get('pnl_percentage', 0)
-                                        position_usd = abs(position.get('position_amount', 0)) * position.get('mark_price', 0)
-                                        cprint(f"📊 Confirmed: ${position_usd:,.2f} position | P&L: {pnl_pct:+.2f}%", "green", attrs=['bold'])
-                                    else:
-                                        cprint(f"⚠️  Warning: Position verification failed - no position found!", "yellow")
+                                    success = n.ai_entry(token, position_size, leverage=LEVERAGE)
                                 else:
-                                    position_usd = n.get_token_balance_usd(token)
-                                    if position_usd > 0:
-                                        cprint(f"📊 Confirmed: ${position_usd:,.2f} position", "green", attrs=['bold'])
+                                    success = n.ai_entry(token, position_size)
+
+                                if success:
+                                    cprint(f"✅ Position opened successfully!", "white", "on_green")
+
+                                    # Verify position was actually opened
+                                    time.sleep(2)  # Brief delay for order to settle
+                                    if EXCHANGE == "HYPERLIQUID":
+                                        position = _hl_get_position(token)
+                                    elif EXCHANGE == "ASTER":
+                                        position = n.get_position(token)
                                     else:
-                                        cprint(f"⚠️  Warning: Position verification failed - no position found!", "yellow")
-                            else:
-                                cprint(f"❌ Position not opened (check errors above)", "white", "on_red")
-                        except Exception as e:
-                            cprint(f"❌ Error opening position: {str(e)}", "white", "on_red")
+                                        position = None
+
+                                    if position and EXCHANGE in ["ASTER", "HYPERLIQUID"]:
+                                        if position.get('position_amount', 0) != 0:
+                                            pnl_pct = position.get('pnl_percentage', 0)
+                                            position_usd = abs(position.get('position_amount', 0)) * position.get('mark_price', 0)
+                                            cprint(f"📊 Confirmed: ${position_usd:,.2f} position | P&L: {pnl_pct:+.2f}%", "green", attrs=['bold'])
+                                        else:
+                                            cprint(f"⚠️  Warning: Position verification failed - no position found!", "yellow")
+                                    else:
+                                        position_usd = n.get_token_balance_usd(token)
+                                        if position_usd > 0:
+                                            cprint(f"📊 Confirmed: ${position_usd:,.2f} position", "green", attrs=['bold'])
+                                        else:
+                                            cprint(f"⚠️  Warning: Position verification failed - no position found!", "yellow")
+                                else:
+                                    cprint(f"❌ Position not opened (check errors above)", "white", "on_red")
+                            except Exception as e:
+                                cprint(f"❌ Error opening position: {str(e)}", "white", "on_red")
 
     def parse_allocation_response(self, response):
         """Parse the AI's allocation response and handle both string and TextBlock formats"""
@@ -1159,7 +1233,13 @@ def main():
             monitored_token = None
 
             for token in SYMBOLS if EXCHANGE in ["ASTER", "HYPERLIQUID"] else MONITORED_TOKENS:
-                if EXCHANGE in ["ASTER", "HYPERLIQUID"]:
+                if EXCHANGE == "HYPERLIQUID":
+                    position = _hl_get_position(token)
+                    if position and position.get('position_amount', 0) != 0:
+                        has_position = True
+                        monitored_token = token
+                        break
+                elif EXCHANGE == "ASTER":
                     position = n.get_position(token)
                     if position and position.get('position_amount', 0) != 0:
                         has_position = True

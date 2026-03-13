@@ -1,0 +1,36 @@
+STRATEGY_NAME: BandStochastic Breakout
+
+STRATEGY_DETAILS:
+This strategy, "BandStochastic Breakout," is a systematic approach designed to identify high-probability breakout opportunities by combining the dynamic volatility analysis of Bollinger Bands with the momentum and overbought/oversold signals from the Stochastic Oscillator. The core philosophy is to enter a trade when price breaks out of a period of low volatility (as defined by the Bollinger Bands) and the Stochastic Oscillator confirms the move with a strong momentum signal, thereby filtering out false breakouts.
+
+**KEY STRATEGY COMPONENTS:**
+1.  **Bollinger Bands (BB):** Used to define the market's volatility and identify potential breakout levels. The bands consist of a middle Simple Moving Average (SMA) and two outer bands set at a standard deviation (typically 2) above and below.
+2.  **Stochastic Oscillator (Stoch):** Used to gauge momentum and identify overbought/oversold conditions. It consists of a %K line (fast) and a %D line (slow, typically a 3-period SMA of %K).
+
+**REQUIRED INDICATORS & SETTINGS:**
+*   **Bollinger Bands:** Period = 20, Standard Deviations = 2.0. Applied to the close.
+*   **Stochastic Oscillator:** %K Period = 14, %D (Smoothing) = 3, Slow = 3. Overbought level = 80, Oversold level = 20.
+
+**ENTRY RULES (LONG):**
+1.  **Volatility Squeeze Setup:** Price must be trading within the middle 50% of the Bollinger Bands (i.e., between the upper and lower band), indicating a period of consolidation or low volatility.
+2.  **Breakout Signal:** The candle **closes** above the **Upper Bollinger Band**. This is the initial breakout signal.
+3.  **Momentum Confirmation:** Simultaneously, the **Stochastic Oscillator %K line must cross above the 20 level** (exiting oversold territory) and be pointing upwards. This confirms that momentum is supporting the bullish breakout and helps filter out weak moves that may quickly reverse.
+4.  **Entry:** Enter a long position on the next candle's open following the confirmed signal.
+
+**ENTRY RULES (SHORT):**
+1.  **Volatility Squeeze Setup:** Price must be trading within the middle 50% of the Bollinger Bands.
+2.  **Breakout Signal:** The candle **closes** below the **Lower Bollinger Band**.
+3.  **Momentum Confirmation:** Simultaneously, the **Stochastic Oscillator %K line must cross below the 80 level** (exiting overbought territory) and be pointing downwards.
+4.  **Entry:** Enter a short position on the next candle's open following the confirmed signal.
+
+**EXIT RULES (Take Profit & Stop Loss):**
+*   **Stop Loss (Long):** Place the stop loss just below the **Middle Bollinger Band (20-period SMA)** or below the recent swing low formed during the consolidation, whichever is closer to the entry price.
+*   **Stop Loss (Short):** Place the stop loss just above the **Middle Bollinger Band (20-period SMA)** or above the recent swing high, whichever is closer.
+*   **Take Profit 1 (TP1):** Set the first profit target at a 1:1 Risk-to-Reward (R:R) ratio. For example, if your stop loss is 50 pips away, take partial profit at +50 pips.
+*   **Take Profit 2 (TP2):** Trail the stop loss to breakeven once TP1 is hit. For the remaining position, consider exiting when the price closes back inside the Bollinger Bands, or when the Stochastic Oscillator reaches the opposite extreme (above 80 for a long trade, below 20 for a short trade).
+
+**RISK MANAGEMENT:**
+*   Never risk more than 1-2% of your total trading capital on a single trade.
+*   The primary risk is a "false breakout" where price quickly reverses back into the band. The Stochastic confirmation is the key filter to reduce these occurrences.
+*   This strategy performs best in trending markets following a period of consolidation. It may generate whipsaws and losses during ranging, choppy markets with no clear direction.
+*   Always consider the higher timeframe trend direction for additional confluence. For example, only take long signals if the daily chart is in an uptrend.

@@ -1,0 +1,36 @@
+STRATEGY_NAME: BandedReversal
+
+STRATEGY_DETAILS:
+
+**Core Concept:** The BandedReversal strategy is a mean-reversion approach that identifies overbought and oversold conditions within a prevailing trend by monitoring the RSI's position relative to its own Bollinger Bands. It seeks to enter trades when the RSI exits an extreme state (crossing back inside its bands) and exit when the price action shows a corrective move is complete.
+
+**Key Components & Required Indicators:**
+1.  **Relative Strength Index (RSI):** Primary oscillator. Standard period of 14.
+2.  **Bollinger Bands on RSI:** Applied to the RSI line itself, not the price. Standard settings: 20-period SMA (middle band) with 2 standard deviations for the upper and lower bands. This creates dynamic overbought/oversold levels.
+3.  **Trend Filter:** A separate, longer-term moving average (e.g., 50-period or 100-period EMA) applied to the price chart to confirm the direction of the underlying trend. This is critical for aligning trades with the trend.
+
+**Entry Rules (LONG):**
+1.  **Trend Condition:** The price must be trading **ABOVE** the long-term moving average (e.g., 50 EMA), confirming an uptrend.
+2.  **RSI Setup:** The RSI must have fallen below its **lower** Bollinger Band, indicating an extreme oversold condition within the uptrend.
+3.  **Trigger:** Enter a long trade when the RSI **crosses back ABOVE** its lower Bollinger Band, signaling a potential reversal from the oversold extreme.
+
+**Entry Rules (SHORT):**
+1.  **Trend Condition:** The price must be trading **BELOW** the long-term moving average (e.g., 50 EMA), confirming a downtrend.
+2.  **RSI Setup:** The RSI must have risen above its **upper** Bollinger Band, indicating an extreme overbought condition within the downtrend.
+3.  **Trigger:** Enter a short trade when the RSI **crosses back BELOW** its upper Bollinger Band, signaling a potential reversal from the overbought extreme.
+
+**Exit Rules:**
+*   **Primary Exit (Profit Target / Reversion):** Exit the trade when the price shows signs of completing its corrective move. A practical method is to exit when the RSI crosses the **opposite** band (e.g., for a long trade, exit when RSI crosses *above* its *upper* band into overbought) or reaches the midline (RSI 50).
+*   **Stop-Loss:** Place a stop-loss order just beyond the recent swing low (for longs) or swing high (for shorts) that coincided with the RSI's extreme band touch. Alternatively, a volatility-based stop (e.g., using the price's Bollinger Bands or ATR) can be used.
+
+**Risk Management:**
+1.  **Position Sizing:** Risk a fixed percentage of capital per trade (e.g., 1-2%).
+2.  **Stop-Loss Placement:** As defined above. The stop-loss is the primary risk control mechanism.
+3.  **Trend Filter Adherence:** Only take signals in the direction of the higher-timeframe trend as defined by the moving average filter. This filters out counter-trend, lower-probability setups.
+4.  **Avoid Choppy Markets:** The strategy may generate whipsaws in ranging, non-trending conditions. The trend filter helps mitigate this.
+
+**Summary Workflow:**
+1.  Identify the trend using the long-term MA.
+2.  Wait for the RSI to be pushed outside its Bollinger Band in the *direction against* the trend (a pullback).
+3.  Enter on the RSI's crossover back inside the band.
+4.  Manage the trade with a stop-loss and exit on signs of momentum exhaustion in the trade's direction.

@@ -1,0 +1,64 @@
+{
+  "strategy_name": "BollingerOBVDivergence",
+  "description": "Go long when price touches or crosses below the lower Bollinger Band while the On-Balance Volume (OBV) shows a positive divergence (higher low) over the same period, indicating weakening selling pressure. Exit the long at the middle band (SMA). Go short when price touches or crosses above the upper Bollinger Band while OBV shows a negative divergence (lower high), indicating weakening buying pressure. Exit the short at the middle band.",
+  "indicators": [
+    {
+      "name": "bbands",
+      "library": "pandas_ta",
+      "params": {
+        "length": 20,
+        "std": 2.0
+      }
+    },
+    {
+      "name": "obv",
+      "library": "pandas_ta",
+      "params": {}
+    },
+    {
+      "name": "atr",
+      "library": "pandas_ta",
+      "params": {
+        "length": 14
+      }
+    }
+  ],
+  "entry_long": {
+    "conditions": [
+      "close <= bbands_lower",
+      "obv_divergence_bullish == True"
+    ],
+    "logic": "ALL"
+  },
+  "entry_short": {
+    "conditions": [
+      "close >= bbands_upper",
+      "obv_divergence_bearish == True"
+    ],
+    "logic": "ALL"
+  },
+  "exit_long": {
+    "conditions": [
+      "close >= bbands_mid"
+    ],
+    "stop_loss": "2.5 * atr(14) below entry price",
+    "take_profit": "None (primary exit is middle band)"
+  },
+  "exit_short": {
+    "conditions": [
+      "close <= bbands_mid"
+    ],
+    "stop_loss": "2.5 * atr(14) above entry price",
+    "take_profit": "None (primary exit is middle band)"
+  },
+  "position_sizing": "fixed 100% equity per trade (backtesting.py default)",
+  "parameters": {
+    "bb_period": 20,
+    "bb_std": 2.0,
+    "divergence_lookback": 14,
+    "atr_period": 14,
+    "atr_stop_multiplier": 2.5
+  },
+  "expected_trade_frequency": "15-30 trades per 1000 candles",
+  "notes": "OBV divergence detection: For bullish, find the lowest price low and lowest OBV value over the last 14 bars. If the current price low is <= the lowest price low but the current OBV value is > the lowest OBV value, set 'obv_divergence_bullish = True'. For bearish, find the highest price high and highest OBV value over the last 14 bars. If the current price high is >= the highest price high but the current OBV value is < the highest OBV value, set 'obv_divergence_bearish = True'. The ATR stop-loss is a safety measure in case price does not revert to the middle band."
+}

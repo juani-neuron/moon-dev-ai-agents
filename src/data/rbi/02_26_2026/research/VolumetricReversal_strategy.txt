@@ -1,0 +1,34 @@
+STRATEGY_NAME: VolumetricReversal
+
+STRATEGY_DETAILS:
+This strategy, "VolumetricReversal," is a sophisticated mean-reversion approach that identifies potential trend reversals by combining oversold conditions in a volume-weighted oscillator with a subsequent price breakout. The core thesis is that a security becomes oversold when selling is exhausted, as confirmed by high volume, and a price move above a recent high signals the beginning of a new bullish impulse.
+
+**KEY STRATEGY COMPONENTS:**
+1.  **Volume-Weighted Oversold Signal:** The primary filter is an oscillator that incorporates both price momentum and trading volume. A common implementation is the Volume Weighted Relative Strength Index (VWRSI) or a custom calculation like `(RSI * Volume) / SMA(Volume, N)`. The strategy triggers when this oscillator falls below a specific threshold (e.g., 30), indicating an oversold condition exacerbated by high relative volume, suggesting capitulation.
+2.  **Breakout Confirmation:** The oversold signal alone is not sufficient for entry. The strategy requires a subsequent price "breakout" to confirm a shift in momentum. This is typically defined as the closing price moving above the high of the candle that generated the oversold signal, or above a recent swing high (e.g., the high of the last 5-10 periods).
+3.  **Volume Validation:** High volume on the breakout candle is a critical confirming factor, lending credibility to the reversal and suggesting strong new buying interest.
+
+**ENTRY RULES:**
+A long position is initiated when ALL of the following conditions are met consecutively:
+1.  **Oversold Trigger:** The Volume-Weighted Oscillator (e.g., 14-period VWRSI) crosses below the oversold level (e.g., 30).
+2.  **Breakout Signal:** After the oversold trigger, the price closes above the high of the candle that registered the oversold signal. (Alternative: closes above the highest high of the last `X` periods, where `X` is a defined lookback, e.g., 5).
+3.  **Volume Confirmation:** The volume on the breakout closing candle is greater than the Simple Moving Average of volume over a recent period (e.g., 20 periods).
+
+**EXIT RULES:**
+1.  **Profit Target:** Set a fixed risk-reward ratio take-profit order. A common initial target is 1.5x to 3x the initial risk (stop-loss distance). A trailing stop can be employed after the price moves significantly in your favor.
+2.  **Stop-Loss:** A protective stop-loss is placed **below the low** of the candle that generated the original oversold signal. This level represents the recent swing low where selling pressure was most intense; a break below it invalidates the reversal thesis.
+3.  **Time-Based Exit:** If the price fails to make significant upward progress within a specified number of bars (e.g., 5-10) after entry, consider exiting to preserve capital.
+
+**RISK MANAGEMENT:**
+-   **Position Sizing:** Risk per trade should be a fixed percentage of the trading capital (e.g., 1-2%). The position size is calculated as: `(Capital * Risk%) / (Entry Price - Stop-Loss Price)`.
+-   **Maximum Drawdown:** Implement a daily or weekly loss limit (e.g., 5-7%) to prevent catastrophic drawdowns during periods of strategy failure.
+-   **Market Context Filter:** For improved reliability, only take signals that align with the broader higher-timeframe trend. For example, only take long VolumetricReversal signals when the price is above a key moving average (e.g., 200-period SMA) on the daily chart.
+
+**REQUIRED INDICATORS & SETTINGS:**
+1.  **Volume-Weighted Oscillator:** Primary indicator. Example: VWRSI (14-period) with an oversold threshold at **30**.
+2.  **Volume:** Raw volume data and its Simple Moving Average (e.g., SMA Volume, 20-period) for confirmation.
+3.  **Price Action:** For identifying highs/lows for breakout and stop-loss levels.
+4.  **(Optional) Trend Filter:** A higher-timeframe moving average (e.g., 200 SMA on Daily chart).
+
+**SUMMARY LOGIC FLOW:**
+`(VW_Oscillator < 30)` → **WAIT** → `(Close > High_of_Oversold_Candle)` **AND** `(Volume > SMA(Volume, 20))` → **ENTER LONG** → `Stop-Loss: Low_of_Oversold_Candle` → `Take-Profit: Entry + (2 * (Entry - Stop-Loss))`

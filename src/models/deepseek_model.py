@@ -34,7 +34,7 @@ class DeepSeekModel(BaseModel):
             cprint(f"❌ Failed to initialize DeepSeek model: {str(e)}", "red")
             self.client = None
     
-    def generate_response(self, 
+    def generate_response(self,
         system_prompt: str,
         user_content: str,
         temperature: float = 0.7,
@@ -43,24 +43,36 @@ class DeepSeekModel(BaseModel):
     ) -> ModelResponse:
         """Generate a response using DeepSeek"""
         try:
-            response = self.client.chat.completions.create(
-                model=self.model_name,
-                messages=[
+            is_reasoner = "reasoner" in self.model_name or "r1" in self.model_name
+
+            params = {
+                "model": self.model_name,
+                "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_content}
                 ],
-                temperature=temperature,
-                max_tokens=max_tokens,
-                stream=False
-            )
-            
+                "max_tokens": max(max_tokens, 8192) if is_reasoner else max_tokens,
+                "stream": False,
+            }
+            # Reasoner models don't support temperature
+            if not is_reasoner:
+                params["temperature"] = temperature
+
+            response = self.client.chat.completions.create(**params)
+
+            content = response.choices[0].message.content
+            # Reasoner models may put output in reasoning_content instead
+            if not content and hasattr(response.choices[0].message, 'reasoning_content'):
+                content = response.choices[0].message.reasoning_content
+            content = (content or "").strip()
+
             return ModelResponse(
-                content=response.choices[0].message.content.strip(),
+                content=content,
                 raw_response=response,
                 model_name=self.model_name,
                 usage=response.usage.model_dump() if hasattr(response, 'usage') else None
             )
-            
+
         except Exception as e:
             cprint(f"❌ DeepSeek generation error: {str(e)}", "red")
             raise

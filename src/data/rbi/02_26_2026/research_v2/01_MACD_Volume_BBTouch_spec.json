@@ -1,0 +1,74 @@
+{
+  "strategy_name": "BollingerVolumeMACD",
+  "description": "Long-only strategy that enters when price breaks below the lower Bollinger Band with confirming volume spike and bullish MACD histogram crossover. Exits when price reaches the middle Bollinger Band (SMA).",
+  "indicators": [
+    {
+      "name": "bbands",
+      "library": "pandas_ta",
+      "params": {
+        "length": 20,
+        "std": 2
+      }
+    },
+    {
+      "name": "sma",
+      "library": "pandas_ta",
+      "params": {
+        "length": 20
+      }
+    },
+    {
+      "name": "volume_sma",
+      "library": "pandas_ta",
+      "params": {
+        "length": 20
+      }
+    },
+    {
+      "name": "macd",
+      "library": "pandas_ta",
+      "params": {
+        "fast": 12,
+        "slow": 26,
+        "signal": 9
+      }
+    }
+  ],
+  "entry_long": {
+    "conditions": [
+      "close < bbands_lower",
+      "volume > 1.5 * volume_sma",
+      "macd_histogram > 0",
+      "macd_histogram_prev <= 0"
+    ],
+    "logic": "ALL"
+  },
+  "entry_short": {
+    "conditions": [],
+    "logic": "ALL"
+  },
+  "exit_long": {
+    "conditions": [
+      "close >= bbands_middle"
+    ],
+    "stop_loss": "None (exit condition overrides)",
+    "take_profit": "None (exit condition overrides)"
+  },
+  "exit_short": {
+    "conditions": [],
+    "stop_loss": "None",
+    "take_profit": "None"
+  },
+  "position_sizing": "fixed 100% equity per trade (backtesting.py default)",
+  "parameters": {
+    "bollinger_period": 20,
+    "bollinger_std": 2,
+    "volume_sma_period": 20,
+    "volume_multiplier": 1.5,
+    "macd_fast": 12,
+    "macd_slow": 26,
+    "macd_signal": 9
+  },
+  "expected_trade_frequency": "15-25 trades per 1000 candles",
+  "notes": "macd_histogram_prev refers to the histogram value from the previous candle. Volume SMA uses 20-period (20*96=1920 15-min candles \u2248 20 days). Strategy is long-only as specified. Exit condition uses bbands_middle which equals SMA(20)."
+}

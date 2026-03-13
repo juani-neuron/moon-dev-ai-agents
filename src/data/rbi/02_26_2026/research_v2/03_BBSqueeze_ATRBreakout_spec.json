@@ -1,0 +1,60 @@
+{
+  "strategy_name": "VolSqueezeBreakout",
+  "description": "This strategy identifies volatility contraction periods using Bollinger Bands. When the bands contract to their narrowest point in 20 days (measured by the percentage bandwidth), and price breaks out by closing above the upper Bollinger Band, a long position is entered. Exits use a trailing stop based on 2x the 14-period ATR from the highest price since entry.",
+  "indicators": [
+    {
+      "name": "bbands",
+      "library": "talib",
+      "params": {
+        "timeperiod": 20,
+        "nbdevup": 2,
+        "nbdevdn": 2
+      }
+    },
+    {
+      "name": "atr",
+      "library": "talib",
+      "params": {
+        "timeperiod": 14
+      }
+    }
+  ],
+  "entry_long": {
+    "conditions": [
+      "bbands_upper[-1] - bbands_lower[-1] <= MIN(bbands_upper - bbands_lower)[-20:-1]",
+      "close[-1] > bbands_upper[-1]"
+    ],
+    "logic": "ALL conditions must be true (AND)"
+  },
+  "entry_short": {
+    "conditions": [
+      "bbands_upper[-1] - bbands_lower[-1] <= MIN(bbands_upper - bbands_lower)[-20:-1]",
+      "close[-1] < bbands_lower[-1]"
+    ],
+    "logic": "ALL conditions must be true (AND)"
+  },
+  "exit_long": {
+    "conditions": [
+      "close[-1] < highest_high_since_entry - 2 * atr_entry_value"
+    ],
+    "stop_loss": "Trailing stop: exit when price closes below (highest high since entry - 2 * ATR(14) value at entry)",
+    "take_profit": "None - trailing stop only"
+  },
+  "exit_short": {
+    "conditions": [
+      "close[-1] > lowest_low_since_entry + 2 * atr_entry_value"
+    ],
+    "stop_loss": "Trailing stop: exit when price closes above (lowest low since entry + 2 * ATR(14) value at entry)",
+    "take_profit": "None - trailing stop only"
+  },
+  "position_sizing": "fixed 100% equity per trade (backtesting.py default)",
+  "parameters": {
+    "bollinger_period": 20,
+    "bollinger_std": 2,
+    "atr_period": 14,
+    "atr_multiplier": 2,
+    "squeeze_lookback": 20
+  },
+  "expected_trade_frequency": "5-15 trades per 1000 candles",
+  "notes": "Implementation requires tracking: 1) highest_high_since_entry for long positions, 2) lowest_low_since_entry for short positions, 3) atr_entry_value (ATR value at entry candle). The bandwidth calculation (bbands_upper - bbands_lower) must be computed for the lookback period. Ensure the MIN function uses a rolling window of 20 previous candles (excluding current)."
+}

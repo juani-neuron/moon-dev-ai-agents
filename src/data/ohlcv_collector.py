@@ -5,14 +5,38 @@ Built with love by Moon Dev 🚀
 """
 
 from src.config import *
-from src import nice_funcs as n
-from src import nice_funcs_hyperliquid as hl
-from src import nice_funcs_aster as aster
 import pandas as pd
 from datetime import datetime
 import os
 from termcolor import colored, cprint
 import time
+
+# Lazy imports — only load exchange modules when actually needed
+# This prevents crashes when API keys (e.g. BIRDEYE_API_KEY) are missing
+_n = None
+_hl = None
+_aster = None
+
+def _get_solana_funcs():
+    global _n
+    if _n is None:
+        from src import nice_funcs as n
+        _n = n
+    return _n
+
+def _get_hl_funcs():
+    global _hl
+    if _hl is None:
+        from src import nice_funcs_hyperliquid as hl
+        _hl = hl
+    return _hl
+
+def _get_aster_funcs():
+    global _aster
+    if _aster is None:
+        from src import nice_funcs_aster as aster
+        _aster = aster
+    return _aster
 
 def collect_token_data(token, days_back=DAYSBACK_4_DATA, timeframe=DATA_TIMEFRAME, exchange="SOLANA"):
     """Collect OHLCV data for a single token
@@ -46,18 +70,22 @@ def collect_token_data(token, days_back=DAYSBACK_4_DATA, timeframe=DATA_TIMEFRAM
         # Route to appropriate data source based on exchange
         if exchange == "HYPERLIQUID":
             # Use HyperLiquid API
+            hl = _get_hl_funcs()
             cprint(f"🏦 Using HyperLiquid API for {token}", "cyan")
             data = hl.get_data(symbol=token, timeframe=hl_timeframe, bars=bars_needed, add_indicators=True)
         elif exchange == "ASTER":
             # Use HyperLiquid API for Aster symbols too (same symbols, same data)
+            hl = _get_hl_funcs()
             cprint(f"🏦 Using HyperLiquid API for {token} (Aster symbols)", "cyan")
             data = hl.get_data(symbol=token, timeframe=hl_timeframe, bars=bars_needed, add_indicators=True)
         elif exchange == "EXTENDED":
             # Use HyperLiquid API for Extended symbols (same data source)
+            hl = _get_hl_funcs()
             cprint(f"🏦 Using HyperLiquid API for {token} (Extended symbols)", "cyan")
             data = hl.get_data(symbol=token, timeframe=hl_timeframe, bars=bars_needed, add_indicators=True)
         else:
             # Default: Use Solana/Birdeye API
+            n = _get_solana_funcs()
             cprint(f"🏦 Using Solana/Birdeye API for {token}", "cyan")
             data = n.get_data(token, days_back, timeframe)
 

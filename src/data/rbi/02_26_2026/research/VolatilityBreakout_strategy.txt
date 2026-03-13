@@ -1,0 +1,37 @@
+STRATEGY_NAME: VolatilityBreakout
+
+STRATEGY_DETAILS:
+
+**Core Concept:**
+This is a short-only, mean-reversion strategy that capitalizes on periods of low volatility followed by expansion. It assumes that when price breaks out of a compressed Bollinger Band during low volatility, it will be a false breakout, and the price will revert back towards the mean, allowing for a profitable short position until it reaches the upper band.
+
+**Key Components & Required Indicators:**
+1.  **Bollinger Bands (BB):** The primary indicator. Standard settings (20-period SMA with 2 standard deviations) are typical, but can be optimized.
+    *   **Middle Band (BB-Mid):** 20-period Simple Moving Average (SMA).
+    *   **Upper Band (BB-Upper):** BB-Mid + (2 * Standard Deviation of 20 periods).
+    *   **Lower Band (BB-Lower):** BB-Mid - (2 * Standard Deviation of 20 periods).
+2.  **Volatility Measurement:** A condition to identify "low volatility." This can be defined by:
+    *   **Bollinger Band Width (BBW):** (BB-Upper - BB-Lower) / BB-Mid. A breakout signal is only valid if the current BBW is below its *N-period* simple moving average (e.g., 50-period SMA of BBW). This confirms volatility is compressed relative to its recent history.
+    *   **Average True Range (ATR):** Can be used as an alternative or confirming filter. The current ATR value should be below its *N-period* SMA.
+
+**Entry Rules (SHORT Signal):**
+A short entry is triggered when ALL of the following conditions are met:
+1.  **Low Volatility Condition:** The Bollinger Band Width (BBW) is below its 50-period Simple Moving Average (S.g., SMA(BBW, 50)). This confirms the bands are compressed.
+2.  **Breakout Signal:** The price (candle close) breaks **BELOW** the Lower Bollinger Band (BB-Lower).
+3.  **Entry Execution:** Enter a short position on the next candle's open following the breakout candle close.
+
+**Exit Rules (Cover Short):**
+The short position is closed when the price (candle close) touches or crosses **ABOVE** the **Upper Bollinger Band (BB-Upper)**. This is the mean-reversion target, expecting the price to snap back from the lower band to the upper band as volatility expands.
+
+**Risk Management:**
+1.  **Stop-Loss:** A protective stop-loss is **CRITICAL** as this strategy fades breakouts. Place a stop-loss **above** the recent swing high that occurred just before the breakout, or at a fixed percentage/ATR-based distance above the entry price (e.g., 1.5 x ATR). This limits losses if the breakout is genuine and the downtrend continues.
+2.  **Position Sizing:** Use a fixed percentage of capital risked per trade (e.g., 1-2%). Calculate position size based on the distance between entry price and stop-loss.
+3.  **Market Context Filter:** For higher probability, only take signals in a neutral or ranging market. Avoid using this strategy during strong, established downtrends, as breakouts below the lower band may be genuine. A simple filter could be that the 50-period SMA is relatively flat.
+
+**Summary Workflow:**
+1.  Monitor the Bollinger Band Width. Wait for it to drop below its own moving average (volatility compression).
+2.  Watch for a candle to close below the Lower Bollinger Band.
+3.  If both conditions are true, enter SHORT on the next open.
+4.  Place a stop-loss above a recent structure.
+5.  Hold the short position until a candle closes at or above the Upper Bollinger Band, then exit.
+6.  If stopped out, wait for the next valid setup.

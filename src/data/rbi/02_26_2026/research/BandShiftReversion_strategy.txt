@@ -1,0 +1,82 @@
+STRATEGY_NAME: BandShiftReversion
+
+STRATEGY_DETAILS:
+This is a specialized mean-reversion strategy that identifies potential reversal points by analyzing the relationship between Bollinger Bands and a moving average, combined with volatility-based exits to maximize re-test capture opportunities.
+
+KEY STRATEGY COMPONENTS:
+1. **Core Concept**: The strategy looks for situations where price has moved significantly below normal levels, but the Bollinger Band structure suggests potential support. The unique condition of the Bollinger Band's LOWER band being ABOVE the 20-period moving average indicates an unusual compression or shift in the band structure that often precedes mean reversion.
+
+2. **Primary Indicators**:
+   - Bollinger Bands (20-period, 2 standard deviations)
+   - 20-period Simple Moving Average (SMA)
+   - Average True Range (ATR) for volatility measurement
+
+3. **Market Conditions**: Works best in ranging or consolidating markets where mean reversion tendencies are strongest. May underperform during strong trending markets.
+
+ENTRY RULES:
+1. **Entry Condition**: Enter a LONG position when BOTH of these conditions are met:
+   - Price touches or crosses below the Bollinger Band LOWER band
+   - The Bollinger Band LOWER band is positioned ABOVE the 20-period SMA
+   
+2. **Entry Timing**: Enter on the close of the candle where both conditions are confirmed.
+
+3. **Entry Logic**: This setup suggests that while price has dropped to the lower Bollinger Band (typically an oversold condition), the band structure itself has shifted upward relative to the moving average. This creates a "band shift" scenario where the lower support level is actually above the recent average price, indicating potential for a quick reversion.
+
+EXIT RULES:
+1. **Stop Loss**: Place initial stop loss at 2x ATR below the entry price
+   - This wider stop accommodates potential re-tests of the low
+   - Example: If ATR = $1.50 and entry = $100, stop = $100 - (2 × $1.50) = $97
+
+2. **Take Profit**: The strategy uses a trailing stop approach:
+   - Initial target: 1x ATR above entry (for partial profit taking if desired)
+   - Main exit: Trail stop using 2x ATR from the highest high since entry
+   - Alternative exit: Exit when price touches the Bollinger Band MIDDLE band (20-period SMA)
+
+3. **Re-test Logic**: The 2x ATR stop allows price to re-test the entry area without being stopped out prematurely, capturing the full reversion move.
+
+RISK MANAGEMENT:
+1. **Position Sizing**: Risk no more than 1-2% of capital per trade
+   - Calculate position size: (Account Risk %) / (Entry Price - Stop Price)
+   
+2. **Maximum Drawdown**: Implement a daily/weekly loss limit (e.g., 5% daily, 15% weekly)
+
+3. **Trade Frequency**: This setup may occur infrequently. Avoid forcing trades when conditions aren't met.
+
+4. **Correlation Risk**: Avoid taking multiple positions in highly correlated instruments.
+
+REQUIRED INDICATORS AND SETTINGS:
+1. **Bollinger Bands**:
+   - Period: 20
+   - Standard Deviations: 2
+   - Calculate: Middle Band = 20-period SMA
+   - Upper Band = Middle Band + (2 × Standard Deviation)
+   - Lower Band = Middle Band - (2 × Standard Deviation)
+
+2. **Moving Average**:
+   - Type: Simple Moving Average (SMA)
+   - Period: 20
+   - Applied to: Close prices
+
+3. **Average True Range (ATR)**:
+   - Period: 14 (standard)
+   - Used for: Stop loss calculation and position sizing
+
+STRATEGY ADVANTAGES:
+- Captures high-probability mean reversion setups
+- Wide stops reduce whipsaw exits during re-tests
+- Clear, objective entry and exit rules
+- Works well during market consolidation periods
+
+STRATEGY LIMITATIONS:
+- May generate false signals during strong downtrends
+- Requires patience as setups may be infrequent
+- Wider stops mean larger potential losses per trade
+- Not suitable for trending markets without additional filters
+
+OPTIMIZATION SUGGESTIONS:
+1. Add volume confirmation (increasing volume on touch of lower band)
+2. Consider adding RSI or Stochastic oversold confirmation
+3. Test different ATR multiples (1.5x to 3x) for stop placement
+4. Add a trend filter (e.g., only trade when 50-period MA is flat or rising)
+
+This "BandShiftReversion" strategy offers a systematic approach to capturing mean reversion opportunities with controlled risk, specifically designed to benefit from the unique band structure condition that often precedes significant price reversals.

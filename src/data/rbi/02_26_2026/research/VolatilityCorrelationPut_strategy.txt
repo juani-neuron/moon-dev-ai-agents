@@ -1,0 +1,47 @@
+STRATEGY_NAME: VolatilityCorrelationPut
+
+STRATEGY_DETAILS:
+This is a short-term, high-precision options selling strategy that exploits a specific correlation condition between market volatility (VIX) and the underlying index (S&P 500) to initiate a put sale at expiration, with entry and exit rules tied to precise daily price levels.
+
+**1. Core Strategy Logic & Key Components:**
+*   **Instrument:** Selling Put Options (Cash-Secured or Naked) on the S&P 500 (SPX/SPY).
+*   **Expiration:** Options are sold *at expiration* (typically same-day expiry for 0DTE or weekly options). The goal is to capture rapid time decay (theta) as the option expires worthless.
+*   **Primary Filter:** A **5% Correlation Band** between the VIX and the S&P 500. The strategy is only active when the daily percentage moves of the VIX and the S&P 500 are moving in a correlated manner (both up or both down) within a 5% divergence threshold. This suggests a "normal" or predictable volatility relationship, potentially indicating lower risk of a sharp, uncorrelated spike in volatility that could hurt a short put position.
+*   **Entry Trigger:** The **Daily High** of the S&P 500 on the expiration day. A sell order for the put option is placed when this level is reached or breached.
+*   **Profit Target/Exit:** The **Next Trading Day's Low**. The position is held overnight and exited (bought back) at the market open or when the S&P 500 hits the subsequent day's low. This defines a very short holding period (approx. 1 day).
+
+**2. Step-by-Step Execution Rules:**
+
+**A. Pre-Market/Setup (Expiration Day):**
+1.  Calculate the previous day's percentage change for both the S&P 500 and the VIX.
+2.  Determine if the absolute difference between these two percentage changes is **less than or equal to 5%**.
+    *   *Example: If SPX closed up 1.0% and VIX closed down 0.5%, the difference is 1.5% (within band). If SPX closed up 1.0% and VIX closed up 7.0%, the difference is 6.0% (outside band - NO TRADE).*
+3.  If the correlation condition is MET, proceed. If not, stand aside.
+
+**B. Entry (On Expiration Day):**
+1.  Identify the **Daily High** price for the S&P 500.
+2.  Once the S&P 500 trades at or above this Daily High level, execute the trade:
+    *   **Action:** SELL TO OPEN an at-the-money (ATM) or slightly out-of-the-money (OTM) put option on the S&P 500 (SPX/SPY) with same-day expiration.
+    *   **Strike Selection:** Typically the strike closest to the current price or 1 strike OTM. The goal is maximum premium decay.
+
+**C. Exit (Next Trading Day):**
+1.  The position is held overnight into the next trading day.
+2.  Exit the position when the S&P 500 reaches the **Next Day's Low**.
+    *   **Action:** BUY TO CLOSE the short put position at the market.
+3.  **Alternative Exit:** If the next day's low is not reached, the trader must decide on a time-based exit (e.g., at market close) or set a discretionary limit order to buy back the put at a fraction of the credit received.
+
+**3. Critical Risk Management:**
+*   **Defined Risk:** Selling puts has theoretically unlimited risk (to zero). This strategy MUST use strict risk controls.
+*   **Stop-Loss (MANDATORY):** A mental or hard stop-loss must be placed immediately upon entry. This should be a percentage of the premium received (e.g., 200-300% loss) or a key technical level on the S&P 500 (e.g., below the expiration day's low or a moving average).
+*   **Position Sizing:** Extremely small position size is crucial due to the short-term, high-risk nature (0DTE/expiration trading). Risk no more than 0.5%-1% of total capital per trade.
+*   **Gap Risk:** Holding a short option overnight incurs gap risk. A negative overnight news event could cause the S&P 500 to open significantly below the profit target (next day's low), leading to large losses. This is the primary risk of the strategy.
+*   **Correlation Breakdown:** The 5% band is a filter, not a guarantee. Volatility can decouple abruptly, especially during market stress, invalidating the strategy's premise.
+
+**4. Required Indicators & Data:**
+*   **S&P 500 Index** (SPX) or ETF (SPY) real-time price data.
+*   **CBOE Volatility Index (VIX)** real-time data.
+*   **Daily High/Low Data:** Access to real-time and historical daily high/low prices for the S&P 500.
+*   **Options Chain:** For the chosen S&P 500 derivative (SPX options for cash settlement, SPY for physical).
+*   **Correlation Calculator:** A simple tool or spreadsheet to calculate the daily % change difference between VIX and SPX.
+
+**Summary:** The *VolatilityCorrelationPut* strategy is a tactical, aggressive premium capture play. It uses a volatility correlation filter to select low-dispersion environments, a price-based trigger (daily high) for entry, and a very short-term price target (next day's low) for exit. Its success hinges entirely on precise execution, minuscule position sizing, and strict adherence to stop-losses to manage the significant risks inherent in selling expiration-day options.

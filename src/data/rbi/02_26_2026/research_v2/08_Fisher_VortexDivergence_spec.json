@@ -1,0 +1,75 @@
+{
+  "strategy_name": "FisherVortexDivergence",
+  "description": "This strategy combines Fisher Transform and Vortex Indicator divergence with volume confirmation. It enters trades when Fisher Transform reverses direction against the Vortex trend while volume is above average, indicating potential trend reversals. Exits occur when ADX slope flattens below 25, signaling weakening trend strength.",
+  "indicators": [
+    {
+      "name": "fisher",
+      "library": "pandas_ta",
+      "params": {
+        "length": 10
+      }
+    },
+    {
+      "name": "vortex",
+      "library": "pandas_ta",
+      "params": {
+        "length": 14
+      }
+    },
+    {
+      "name": "adx",
+      "library": "pandas_ta",
+      "params": {
+        "length": 14
+      }
+    },
+    {
+      "name": "sma",
+      "library": "pandas_ta",
+      "params": {
+        "close": "volume",
+        "length": 20
+      }
+    }
+  ],
+  "entry_long": {
+    "conditions": [
+      "fisher[-2] < fisher[-1] and fisher[-1] > fisher[0]",
+      "vortex_neg[0] > vortex_pos[0]",
+      "volume[0] > sma_volume[0]"
+    ],
+    "logic": "ALL conditions must be true (AND)"
+  },
+  "entry_short": {
+    "conditions": [
+      "fisher[-2] > fisher[-1] and fisher[-1] < fisher[0]",
+      "vortex_pos[0] > vortex_neg[0]",
+      "volume[0] > sma_volume[0]"
+    ],
+    "logic": "ALL conditions must be true (AND)"
+  },
+  "exit_long": {
+    "conditions": [
+      "adx[0] < 25 and adx[-1] > adx[0]"
+    ],
+    "stop_loss": "2x ATR(14) below entry price",
+    "take_profit": "2x ATR(14) above entry price"
+  },
+  "exit_short": {
+    "conditions": [
+      "adx[0] < 25 and adx[-1] > adx[0]"
+    ],
+    "stop_loss": "2x ATR(14) above entry price",
+    "take_profit": "2x ATR(14) below entry price"
+  },
+  "position_sizing": "fixed 100% equity per trade (backtesting.py default)",
+  "parameters": {
+    "fisher_length": 10,
+    "vortex_length": 14,
+    "adx_length": 14,
+    "volume_sma_length": 20,
+    "atr_length": 14
+  },
+  "expected_trade_frequency": "15-25 trades per 1000 candles",
+  "notes": "Vortex indicator returns two series: vortex_pos (VI+) and vortex_neg (VI-). Fisher Transform reversal detection uses the last 3 bars. ADX slope flattening is detected when current ADX < 25 AND previous ADX > current ADX. Volume confirmation uses 20-period SMA of volume. ATR(14) needed for stop loss/take profit but not for entry logic."
+}

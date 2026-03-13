@@ -1,0 +1,34 @@
+STRATEGY_NAME: FractalDivergence
+
+STRATEGY_DETAILS:
+
+**1. Core Concept & Key Components**
+This strategy is a hybrid approach that combines fractal geometry with Fibonacci harmonic analysis. The primary thesis is that financial markets exhibit self-similar, repeating patterns (fractals) at different time scales. The strategy identifies these fractal structures and uses divergences between price action and Fibonacci retracement levels as high-probability entry signals. It is designed to capture reversals at key structural levels within the market's fractal framework.
+
+**2. Required Indicators & Tools**
+*   **Fractal Indicator (Williams Fractals):** The primary tool for identifying swing highs and swing lows that form the basic fractal structure. A bullish fractal is a pattern with a low in the center and two higher lows on each side. A bearish fractal is a pattern with a high in the center and two lower highs on each side.
+*   **Fibonacci Retracement Tool:** Applied manually between significant fractal points (e.g., from a major swing low fractal to a major swing high fractal for an uptrend, or vice-versa for a downtrend). Key levels are typically 38.2%, 50.0%, and 61.8%.
+*   **Momentum Oscillator (Recommended: MACD or RSI):** Used to identify divergence between price and momentum, confirming the fractal-Fibonacci signal.
+
+**3. Entry Rules (Long Example)**
+1.  **Identify the Trend & Fractal Structure:** Determine the prevailing higher-timeframe trend. Identify a clear, significant bearish fractal (swing high) followed by a price decline.
+2.  **Apply Fibonacci Retracement:** Draw a Fibonacci retracement tool from the low point *before* the bearish fractal to the high point *of* the bearish fractal.
+3.  **Wait for Price to Test a Key Level:** Price must retrace upwards to test one of the key Fibonacci levels (preferably 61.8% or 50%).
+4.  **Identify Divergence at the Level:** As price tests the Fibonacci level, the momentum oscillator (e.g., RSI) must show **bearish divergence** (price makes a higher high on the retracement, but the oscillator makes a lower high). This signals weakening upward momentum at a critical Fibonacci resistance level.
+5.  **Confirm with Fractal Formation:** A new bearish fractal pattern should begin to form *at or very near* the Fibonacci level where divergence is observed.
+6.  **Entry Trigger:** Enter a **SHORT** position on a break and close below the low of the candle that formed the center point of the new bearish fractal at the divergence zone.
+
+*(For a LONG entry, reverse the logic: Identify a bullish fractal low, apply Fibs from the prior high, look for bullish divergence at a Fib support level (e.g., 38.2%), confirm a new bullish fractal forming, and enter on a break above the high of its center candle.)*
+
+**4. Exit & Risk Management Rules**
+*   **Stop-Loss Placement:**
+    *   For a SHORT trade, place the stop-loss just *above* the high of the bearish fractal that triggered the entry (or above the relevant Fibonacci level).
+    *   For a LONG trade, place the stop-loss just *below* the low of the bullish fractal that triggered the entry (or below the relevant Fibonacci level).
+*   **Profit Targets (Take-Profit Levels):** Use Fibonacci *extensions* applied from the same swing points used for the retracement. Primary targets are often the 100% and 161.8% extension levels. Alternatively, exit when a new, opposing fractal pattern forms in the direction of the trade at a lower time frame.
+*   **Risk-to-Reward Ratio:** The strategy should aim for a minimum 1:1.5 R:R. The distance to the first Fibonacci extension target (100%) should be at least 1.5 times the distance to the stop-loss.
+*   **Position Sizing:** Risk no more than 1-2% of total capital per trade based on the distance between entry and stop-loss.
+
+**5. Timeframe & Filtering**
+*   **Primary Analysis Timeframe:** Use this strategy on 1-hour, 4-hour, or daily charts for reliable fractal structures.
+*   **Signal Confirmation Timeframe:** Entry triggers can be taken on a lower timeframe (e.g., 15-minute or 1-hour) for better precision, but the core fractal and Fibonacci setup must be valid on the higher timeframe.
+*   **Market Context Filter:** The strategy works best in ranging or gently trending markets. Avoid using it during extreme, volatile news events or in strongly trending markets where price may blow through Fibonacci levels without hesitation.

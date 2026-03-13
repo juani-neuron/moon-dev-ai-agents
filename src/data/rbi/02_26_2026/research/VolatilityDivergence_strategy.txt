@@ -1,0 +1,31 @@
+STRATEGY_NAME: VolatilityDivergence
+
+STRATEGY_DETAILS:
+This strategy, "VolatilityDivergence," is a sophisticated approach that combines volatility analysis with divergence detection to identify high-probability breakout opportunities. It is designed to capitalize on periods of market compression followed by expansion, using divergence between price action and volatility as a key signal for impending directional moves.
+
+**Key Strategy Components:**
+1.  **Volatility Measurement:** The core of the strategy relies on a volatility indicator, such as the Average True Range (ATR) or Bollinger Band Width, to quantify market compression and expansion phases.
+2.  **Divergence Detection:** The strategy specifically looks for *divergence* between price and volatility. The most critical signal is **Hidden Bullish Divergence** during a consolidation or pullback: Price makes a higher low (or holds a key support), while the volatility indicator makes a lower low, indicating decreasing selling pressure and a potential buildup for an upward breakout.
+3.  **Breakout Confirmation:** A divergence signal alone is not sufficient for entry. A subsequent price breakout above a defined resistance level (e.g., a recent swing high or a dynamic level like a moving average) is required to confirm the move and trigger an entry.
+4.  **Trend Context Filter:** To improve reliability, all signals should be taken in the direction of the broader trend, identified using a primary trend filter like a long-term Exponential Moving Average (EMA).
+
+**Required Indicators:**
+*   **Primary Volatility Indicator:** Average True Range (ATR - 14 period) or Bollinger Bands (20,2).
+*   **Trend Filter:** 50-period and/or 200-period Exponential Moving Average (EMA).
+*   **Support/Resistance Identification:** Use recent swing highs and lows on the price chart.
+
+**Entry Rules (Long Example):**
+1.  **Context:** Price is above the 50-period EMA (uptrend context). It pulls back to a key support level or forms a higher low.
+2.  **Divergence Setup:** As price forms its higher low, the ATR reading *decreases* (forms a lower low), creating a Hidden Bullish Divergence between price and volatility.
+3.  **Trigger:** Price breaks out and closes above the most recent swing high that preceded the pullback.
+4.  **Entry:** Enter a long position on the next candle's open following the confirmed breakout close.
+
+**Exit & Risk Management Rules:**
+*   **Stop-Loss:** Place the initial stop-loss below the recent swing low (the higher low that formed part of the divergence). The distance of this stop can be validated by the ATR (e.g., stop placed 1.5 x ATR below entry).
+*   **Take-Profit:** Utilize a risk-reward ratio of at least 1:2. Primary profit targets can be set at previous resistance levels or using a trailing stop mechanism (e.g., trail using a multiple of ATR or a moving average) to capture extended trends.
+*   **Position Sizing:** Risk no more than 1-2% of the trading capital on any single trade, based on the distance between entry and stop-loss.
+
+**Key Considerations:**
+*   This strategy works best on higher timeframes (1H, 4H, Daily) where signals are more reliable.
+*   The divergence between price and volatility is a measure of momentum and can fail. The breakout confirmation is the critical filter that separates valid setups from false signals.
+*   Avoid taking signals during periods of extremely low volatility that precede major news events, as false breakouts are common.

@@ -1,0 +1,43 @@
+STRATEGY_NAME: DivergenceVolatilityBreakout
+
+STRATEGY_DETAILS:
+
+**Core Concept:** This is a multi-confirmation trend-following strategy designed to capture the initial thrust of a new bullish trend. It waits for a hidden bullish divergence signal (suggesting underlying strength during a pullback) and then requires a decisive breakout above a volatility-based resistance level (Keltner Channel), all occurring within a context of expanding market volatility (Bollinger Bands). This layered approach aims to filter out false breakouts and identify high-probability, momentum-driven entries.
+
+**Required Indicators & Setup:**
+1.  **Price:** Candlestick or line chart.
+2.  **RSI (Relative Strength Index):** Period 14, applied to close. Used to identify bullish divergence.
+3.  **Keltner Channel:** A volatility-based envelope. Typical settings: 20-period EMA (centerline), 1.5 ATR (Average True Range) for the bands.
+4.  **Bollinger Bands:** A volatility indicator. Typical settings: 20-period SMA (centerline), 2 standard deviations.
+5.  **Ensure all indicators are plotted on the same chart.**
+
+**Key Strategy Components:**
+*   **Bullish Divergence (Momentum Precursor):** The RSI makes a higher low while the price makes a lower low or a equal low. This signals weakening selling pressure and is the first condition.
+*   **Volatility Expansion (Market Context):** The width between the upper and lower Bollinger Bands must be expanding or be wider than its recent average, indicating increasing market activity and potential for a strong move.
+*   **Keltner Channel Breakout (Price Trigger):** The price must close *above* the Upper Keltner Channel band. This is the decisive entry signal, confirming the breakout from a volatility-based dynamic resistance.
+
+**Entry Rules (LONG):**
+All of the following conditions must be met on the **same closing candle**:
+1.  **Divergence Confirmed:** A valid RSI Bullish Divergence pattern is present (RSI higher low vs. price lower/equal low).
+2.  **Volatility Context:** The Bollinger Bands are visibly expanding or are wider than they were 5-10 bars ago.
+3.  **Breakout Trigger:** The candle **closes** definitively above the Upper Keltner Channel line.
+4.  **Entry Action:** Enter a LONG position at the market price on the close of this confirming candle.
+
+**Exit Rules:**
+*   **Profit Target:** The strategy does not specify a fixed take-profit. The trend is intended to be followed until the exit signal occurs.
+*   **Stop Loss:** A protective stop-loss should be placed below a recent significant swing low or below the Lower Keltner Channel band. A common method is to use a multiple of the ATR (e.g., 1.5x ATR below entry).
+*   **Strategy Exit Signal:** Exit the LONG position when the price **closes below the Upper Keltner Channel** after the initial entry. This signals the immediate bullish momentum has paused or reversed. For a more aggressive trend-follow, you could use a close below the *Middle* Keltner Channel (the 20-period EMA) as the exit.
+
+**Risk Management:**
+1.  **Position Sizing:** Risk only a small, fixed percentage of your trading capital per trade (e.g., 1-2%).
+2.  **Stop-Loss Discipline:** The stop-loss is mandatory. Calculate your position size based on the distance between your entry price and your stop-loss price.
+3.  **Signal Quality:** Avoid entering if the breakout candle is a "wicky" doji or has a very small body; prefer candles with strong bullish bodies for confirmation.
+4.  **Market Context:** This strategy performs best in markets transitioning from consolidation/ranges into trending phases. It may generate whipsaws during low-volatility, sideways markets.
+
+**Summary Workflow:**
+1.  Identify a potential RSI Bullish Divergence forming during a price dip/pullback.
+2.  Monitor the Bollinger Bands for signs of expansion (squeeze ending).
+3.  Wait for a candle to close powerfully above the Upper Keltner Channel.
+4.  If all three conditions align on the close, ENTER LONG.
+5.  Place a stop-loss below support.
+6.  Manage the trade: EXIT on a close back below the Upper Keltner Channel.

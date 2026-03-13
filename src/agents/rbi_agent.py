@@ -35,52 +35,47 @@ Remember: Past performance doesn't guarantee future results!
 """
 
 
-## Previous presets (kept for easy switching) 👇
-# RESEARCH_CONFIG = {
-#     "type": "deepseek",
-#     "name": "deepseek-chat"  # Using DeepSeek Chat for research
-# }
-# 
-# BACKTEST_CONFIG = {
-#     "type": "deepseek", 
-#     "name": "deepseek-reasoner"  # Using DeepSeek Reasoner for backtesting
-# }
-# 
-# DEBUG_CONFIG = {
-#     "type": "deepseek",
-#     "name": "deepseek-chat"  # Using DeepSeek Chat for debugging
-# }
-# 
-# # DEBUG_CONFIG = {
-# #     "type": "ollama",
-# #     "name": "deepseek-r1"  # Using Ollama's DeepSeek-R1 for debugging
-# # }
-# 
-# PACKAGE_CONFIG = {
-#     "type": "deepseek",
-#     "name": "deepseek-chat"  # Using DeepSeek Chat for package optimization
-# }
-
-# New OpenAI presets using GPT-5 for all agents 🌙🚀
+## DeepSeek presets (active) 🌙
 RESEARCH_CONFIG = {
-    "type": "openai",
-    "name": "gpt-5"
+    "type": "deepseek",
+    "name": "deepseek-chat"  # Using DeepSeek Chat for research
 }
 
 BACKTEST_CONFIG = {
-    "type": "openai",
-    "name": "gpt-5"
+    "type": "deepseek",
+    "name": "deepseek-reasoner"  # Using DeepSeek Reasoner for backtesting
 }
 
 DEBUG_CONFIG = {
-    "type": "openai",
-    "name": "gpt-5"
+    "type": "deepseek",
+    "name": "deepseek-chat"  # Using DeepSeek Chat for debugging
 }
 
 PACKAGE_CONFIG = {
-    "type": "openai",
-    "name": "gpt-5"
+    "type": "deepseek",
+    "name": "deepseek-chat"  # Using DeepSeek Chat for package optimization
 }
+
+## Previous presets (kept for easy switching) 👇
+# RESEARCH_CONFIG = {
+#     "type": "openai",
+#     "name": "gpt-5"
+# }
+#
+# BACKTEST_CONFIG = {
+#     "type": "openai",
+#     "name": "gpt-5"
+# }
+#
+# DEBUG_CONFIG = {
+#     "type": "openai",
+#     "name": "gpt-5"
+# }
+#
+# PACKAGE_CONFIG = {
+#     "type": "openai",
+#     "name": "gpt-5"
+# }
 
 
 
@@ -237,7 +232,7 @@ RISK MANAGEMENT:
 
 If you need indicators use TA lib or pandas TA. 
 
-Use this data path: {PROJECT_ROOT}/src/data/rbi/BTC-USD-15m.csv (use absolute path in code)
+Use this data path: {PROJECT_ROOT}/src/data/rbi/BTC-USD-15m-train.csv (use absolute path in code)
 the above data head looks like below
 datetime, open, high, low, close, volume,
 2023-01-01 00:00:00, 16531.83, 16532.69, 16509.11, 16510.82, 231.05338022,
@@ -910,12 +905,18 @@ def process_trading_idea(idea: str) -> None:
         
         # Log the idea as processed once we have a strategy name
         log_processed_idea(idea, strategy_name)
-        
+
         # Save research output
         research_file = RESEARCH_DIR / f"{strategy_name}_strategy.txt"
         with open(research_file, 'w') as f:
             f.write(strategy)
-            
+
+        # Research-only mode: stop here if RBI_RESEARCH_ONLY is set
+        if os.getenv("RBI_RESEARCH_ONLY"):
+            cprint(f"\n📝 Research-only mode: stopping after research phase", "cyan")
+            cprint(f"✅ Research saved to: {research_file}", "green")
+            return
+
         # Phase 2: Backtest using only the research output
         print("\n📈 Phase 2: Backtest")
         backtest = create_backtest(strategy, strategy_name)

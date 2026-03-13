@@ -1,0 +1,65 @@
+{
+  "strategy_name": "ATRVolumeBreakout",
+  "description": "Long and short breakout strategy that triggers when the 20-period ATR exceeds its 90-day rolling maximum, indicating increased volatility, combined with volume spiking above its 30-day average for confirmation. Entries are taken on the breakout candle close with a 2:1 risk-reward ratio using ATR-based stops.",
+  "indicators": [
+    {
+      "name": "atr",
+      "library": "pandas_ta",
+      "params": {
+        "length": 20
+      }
+    },
+    {
+      "name": "sma",
+      "library": "pandas_ta",
+      "params": {
+        "close": "volume",
+        "length": 30
+      }
+    },
+    {
+      "name": "max",
+      "library": "pandas_ta",
+      "params": {
+        "close": "atr_20",
+        "length": 360
+      }
+    }
+  ],
+  "entry_long": {
+    "conditions": [
+      "atr_20 > atr_20_360_max",
+      "volume > volume_30_sma",
+      "close > open"
+    ],
+    "logic": "ALL conditions must be true (AND)"
+  },
+  "entry_short": {
+    "conditions": [
+      "atr_20 > atr_20_360_max",
+      "volume > volume_30_sma",
+      "close < open"
+    ],
+    "logic": "ALL conditions must be true (AND)"
+  },
+  "exit_long": {
+    "conditions": [],
+    "stop_loss": "entry_price - (2 * atr_20)",
+    "take_profit": "entry_price + (4 * atr_20)"
+  },
+  "exit_short": {
+    "conditions": [],
+    "stop_loss": "entry_price + (2 * atr_20)",
+    "take_profit": "entry_price - (4 * atr_20)"
+  },
+  "position_sizing": "fixed 100% equity per trade (backtesting.py default)",
+  "parameters": {
+    "atr_period": 20,
+    "atr_lookback_days": 90,
+    "volume_sma_period": 30,
+    "risk_multiplier": 2,
+    "reward_multiplier": 4
+  },
+  "expected_trade_frequency": "15-25 trades per 1000 candles",
+  "notes": "ATR 90-day high uses 360 bars (90 days * 4 bars/hour * 24 hours/day / 15-min intervals). Volume SMA uses volume column. The 2:1 risk-reward means profit target is 2x the stop distance (stop = 2*ATR, target = 4*ATR). Ensure atr_20_360_max is calculated on rolling basis without lookahead bias."
+}

@@ -1,0 +1,75 @@
+{
+  "strategy_name": "GoldenCrossVolumeBreakout",
+  "description": "Long entry when 50-period SMA crosses above 200-period SMA (golden cross) AND volume exceeds its 20-period SMA by 50%. Exit using 2x ATR(14) stop loss or 5% trailing stop (whichever triggers first). Short entry is the inverse (death cross with volume spike).",
+  "indicators": [
+    {
+      "name": "sma",
+      "library": "pandas_ta",
+      "params": {
+        "length": 50
+      }
+    },
+    {
+      "name": "sma",
+      "library": "pandas_ta",
+      "params": {
+        "length": 200
+      }
+    },
+    {
+      "name": "sma",
+      "library": "pandas_ta",
+      "params": {
+        "length": 20,
+        "close": "volume"
+      }
+    },
+    {
+      "name": "atr",
+      "library": "pandas_ta",
+      "params": {
+        "length": 14
+      }
+    }
+  ],
+  "entry_long": {
+    "conditions": [
+      "sma_50 > sma_200",
+      "sma_50_prev <= sma_200_prev",
+      "volume > sma_20_volume * 1.5"
+    ],
+    "logic": "ALL"
+  },
+  "entry_short": {
+    "conditions": [
+      "sma_50 < sma_200",
+      "sma_50_prev >= sma_200_prev",
+      "volume > sma_20_volume * 1.5"
+    ],
+    "logic": "ALL"
+  },
+  "exit_long": {
+    "conditions": [
+      "close < entry_price - (atr_14 * 2)",
+      "close < highest_close_since_entry * 0.95"
+    ],
+    "stop_loss": "2x ATR(14) below entry price",
+    "take_profit": "5% trailing stop from highest close since entry"
+  },
+  "exit_short": {
+    "conditions": [
+      "close > entry_price + (atr_14 * 2)",
+      "close > lowest_close_since_entry * 1.05"
+    ],
+    "stop_loss": "2x ATR(14) above entry price",
+    "take_profit": "5% trailing stop from lowest close since entry"
+  },
+  "position_sizing": "fixed 100% equity per trade (backtesting.py default)",
+  "parameters": {
+    "volume_spike_multiplier": 1.5,
+    "atr_stop_multiplier": 2,
+    "trailing_stop_percent": 5
+  },
+  "expected_trade_frequency": "8-12 trades per 1000 candles",
+  "notes": "sma_50_prev and sma_200_prev refer to previous candle values. For trailing stop: track highest_close_since_entry for longs and lowest_close_since_entry for shorts. Both exit conditions are monitored simultaneously - whichever triggers first exits the position."
+}

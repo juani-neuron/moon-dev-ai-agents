@@ -1,0 +1,66 @@
+{
+  "strategy_name": "VortexElderTrend",
+  "description": "A trend-following strategy that enters long when the Vortex VI+ crosses above VI- and the Elder Force Index confirms bullish momentum. Enters short when VI- crosses above VI+ with bearish Force Index confirmation. Exits using a trailing stop-loss based on ATR.",
+  "indicators": [
+    {
+      "name": "vortex",
+      "library": "pandas_ta",
+      "params": {
+        "length": 14
+      }
+    },
+    {
+      "name": "efi",
+      "library": "pandas_ta",
+      "params": {
+        "length": 13
+      }
+    },
+    {
+      "name": "atr",
+      "library": "pandas_ta",
+      "params": {
+        "length": 14
+      }
+    }
+  ],
+  "entry_long": {
+    "conditions": [
+      "VI_plus > VI_minus",
+      "VI_plus_prev <= VI_minus_prev",
+      "EFI > 0"
+    ],
+    "logic": "ALL conditions must be true (AND)"
+  },
+  "entry_short": {
+    "conditions": [
+      "VI_minus > VI_plus",
+      "VI_minus_prev <= VI_plus_prev",
+      "EFI < 0"
+    ],
+    "logic": "ALL conditions must be true (AND)"
+  },
+  "exit_long": {
+    "conditions": [
+      "close < (highest_close_14_bars - 2 * ATR_14)"
+    ],
+    "stop_loss": "Trailing stop: exit when price falls 2x ATR(14) below the highest close in the last 14 bars",
+    "take_profit": "None - trailing stop only"
+  },
+  "exit_short": {
+    "conditions": [
+      "close > (lowest_close_14_bars + 2 * ATR_14)"
+    ],
+    "stop_loss": "Trailing stop: exit when price rises 2x ATR(14) above the lowest close in the last 14 bars",
+    "take_profit": "None - trailing stop only"
+  },
+  "position_sizing": "fixed 100% equity per trade (backtesting.py default)",
+  "parameters": {
+    "vortex_period": 14,
+    "efi_period": 13,
+    "atr_period": 14,
+    "trailing_multiplier": 2
+  },
+  "expected_trade_frequency": "15-30 trades per 1000 candles",
+  "notes": "VI_plus_prev and VI_minus_prev refer to the previous bar's VI+ and VI- values. highest_close_14_bars and lowest_close_14_bars are rolling maximum/minimum of close over 14 bars. Ensure EFI uses volume data from OHLCV."
+}

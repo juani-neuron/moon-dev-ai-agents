@@ -497,7 +497,7 @@ def _get_ohlcv(symbol, interval, start_time, end_time, batch_size=BATCH_SIZE):
                 BASE_URL,
                 headers={'Content-Type': 'application/json'},
                 json=request_payload,
-                timeout=10
+                timeout=30
             )
 
             print(f'\n📥 API Response:')
